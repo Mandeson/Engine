@@ -8,7 +8,7 @@
 #include <sys/auxv.h>
 #endif
 
-#include "../../OpenGL.h"
+#include "../../OpenGL.hpp"
 #include "../../util/Vector.hpp"
 #include "../../util/Logger.hpp"
 #include "../../Game.hpp"

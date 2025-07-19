@@ -1,0 +1,109 @@
+#include "FontAtlas.hpp"
+#include "../util/Logger.hpp"
+#include <cstdint>
+#include <freetype/fttypes.h>
+#include <vector>
+#include "Font.hpp"
+
+const char *FontAtlas::GlyphNotFoundError::what() const noexcept {
+    return "Could not load a font character";
+}
+
+const char *FontAtlas::GlyphRenderError::what() const noexcept {
+    return "Could not render a font character";
+}
+
+FontAtlas::FontAtlas(Font &font, float font_size) : font_(font), font_size_(font_size), texture_size_(256) {
+	if (font_size >= 50.0f)
+		texture_size_ *= 2;
+	if (font_size >= 100.0f)
+		texture_size_ *= 2;
+	if (font_size >= 200.0f)
+		texture_size_ *= 2;
+    Log::dbg("Creatng new FontAtlas");
+    textures_.emplace_back(texture_size_);
+}
+
+FontAtlas::Glyph &FontAtlas::getGlyph(unsigned int codepoint) {
+    auto it = glyphs_.find(codepoint);
+    if (it == glyphs_.end()) { // Glyph not yet rendered
+        auto &glyph = glyphs_.emplace(codepoint, Glyph{}).first->second;
+
+        FT_Set_Char_Size(font_.face_, 0, static_cast<int>(font_size_ * 64), 0, 0);
+		Log::dbg( "Rendering glyph: {}", codepoint);
+		auto glyph_index = FT_Get_Char_Index(font_.face_, codepoint);
+		if (FT_Load_Glyph(font_.face_, glyph_index, FT_LOAD_DEFAULT) != 0)
+			throw GlyphNotFoundError();
+		if (FT_Render_Glyph(font_.face_->glyph, FT_RENDER_MODE_NORMAL) != 0)
+			throw GlyphRenderError();
+		FT_GlyphSlot g = font_.face_->glyph;
+        Vector2i glyph_size = {static_cast<int>(g->bitmap.width), static_cast<int>(g->bitmap.rows)};
+		if (pos_.x + glyph_size.x >= texture_size_) { // No space left in the current row
+			pos_.x = 1;
+			pos_.y += row_height_ + 1;
+			row_height_ = 0;
+		}
+		if (pos_.y + glyph_size.y >= texture_size_) { // Texture full
+            // TODO: if it's the first glyph in this texture, throw exception
+			Log::dbg("Font atlas full");
+            pos_ = {1, 1};
+            row_height_ = 0;
+            textures_.emplace_back(texture_size_);
+		}
+        auto &last_texture = textures_.back();
+		for (int y = 0; y < glyph_size.y; y++) {
+			for (int x = 0; x < glyph_size.x; x++) {
+				last_texture.atlas_[(pos_.y + y) * texture_size_ + (pos_.x + x)] = g->bitmap.buffer[y * g->bitmap.width + x];
+			}
+		}
+		row_height_ = std::max(row_height_, static_cast<int>(g->bitmap.rows));
+        glyph.texture_index = textures_.size() - 1;
+		glyph.size = {static_cast<int>(g->bitmap.width), static_cast<int>(g->bitmap.rows)};
+		glyph.atlas_pos = pos_;
+		glyph.offset = {g->bitmap_left, g->bitmap_top};
+		glyph.advance = {static_cast<int>(g->advance.x), static_cast<int>(g->advance.y)};
+		pos_.x += g->bitmap.width + 1;
+        last_texture.dirty_ = true;
+        return glyph;
+    } else {
+        return it->second;
+    }
+}
+
+int FontAtlas::getAtlasCount() {
+    return textures_.size();
+}
+
+GLuint FontAtlas::getAtlasTextureId(int texture_index) {
+    for (int i = 0; i < static_cast<int>(textures_.size()) - 1; i++) { // Not the last, actively changed atlas
+        auto &texture = textures_[i];
+        if (texture.atlas_.size() && texture.texture_generated_ && !texture.dirty_)
+            texture.atlas_ = std::vector<uint8_t>(); // Deallocate memory
+    }
+
+    auto &texture = textures_[texture_index];
+    if (!texture.texture_generated_) {
+        glGenTextures(1, &texture.texture_id_);
+        glBindTexture(GL_TEXTURE_2D, texture.texture_id_);
+        glTexImage2D(GL_TEXTURE_2D, 0, GL_LUMINANCE, texture_size_,
+                texture_size_, 0, GL_LUMINANCE, GL_UNSIGNED_BYTE,
+                reinterpret_cast<void *>(&texture.atlas_[0]));
+        texture.texture_generated_ = true;
+    } else {
+        if (texture.dirty_) {
+            glBindTexture(GL_TEXTURE_2D, texture.texture_id_);
+            glTexSubImage2D(GL_TEXTURE_2D, 0, 0, 0, texture_size_,
+                    texture_size_, GL_LUMINANCE, GL_UNSIGNED_BYTE,
+                    reinterpret_cast<void *>(&texture.atlas_[0]));
+        }
+    }
+    texture.dirty_ = false;
+    return texture.texture_id_;
+}
+
+FontAtlas::Texture::Texture(int texture_size) : atlas_(texture_size * texture_size) { }
+
+FontAtlas::Texture::~Texture() {
+    if (texture_generated_)
+        glDeleteTextures(1, &texture_id_);
+}
