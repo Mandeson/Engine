@@ -12,6 +12,7 @@
 #include "../../util/Vector.hpp"
 #include "../../util/Logger.hpp"
 #include "../../Game.hpp"
+#include "../../EngineContext.hpp"
 
 constexpr Vector2i kWindowDefaultSize = {800, 600};
 
@@ -108,6 +109,8 @@ int main() {
 		} else {
 			Log::err("<Desktop> Could not load OpenGL");
 		}
+		if (!g_game.expired())
+			Log::err("<Desktop> Termination error. Memory leak. Possibly somewhere a shared pointer to Game has been left");
 		glfwDestroyWindow(window);
 		Log::info("<Desktop> Destroyed window");
 	} else {
@@ -117,6 +120,10 @@ int main() {
 	Log::info("<Desktop> Terminated GLFW");
 
 	return 0;
+}
+
+std::shared_ptr<Game> EngineContext::game() {
+	return g_game.lock();
 }
 
 void framebuffer_size_callback(GLFWwindow *window, int width, int height) {
