@@ -3,6 +3,7 @@
 #include "util/Logger.hpp"
 #include "util/Vector.hpp"
 #include "Game.hpp"
+#include "lua/Font.hpp"
 
 Game::Game(Vector2i window_size, int monitor_height, float ui_scale, int random_seed)
         : font_("Roboto-Regular.ttf") {
@@ -10,7 +11,7 @@ Game::Game(Vector2i window_size, int monitor_height, float ui_scale, int random_
 
     lua_newtable(L);
     lua_setglobal(L, "Engine");
-    Font::registerLua(L, &font_);
+    Lua::Font::registerLua(L);
 
     luaL_openlibs(L);
     if (luaL_dofile(L, "assets/scripts/game.lua") != LUA_OK) {
@@ -36,4 +37,8 @@ void Game::render() {
 
 void Game::timeStep(double time) {
 
+}
+
+Font *Game::getDefaultFont() {
+    return &font_;
 }

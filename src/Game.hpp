@@ -11,6 +11,7 @@ public:
     void windowSize(Vector2i size);
     void render();
     void timeStep(double time);
+    Font *getDefaultFont();
 private:
     Font font_;
     lua_State *L;
