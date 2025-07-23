@@ -9,6 +9,10 @@ struct Vector2 {
     Vector2<T> operator*(D val) const {
         return Vector2<T>{static_cast<T>(x * val), static_cast<T>(y * val)};
     }
+    
+    Vector2<T> operator+(const Vector2<T> &other) const {
+        return Vector2<T>{static_cast<T>(x + other.x), static_cast<T>(y + other.y)};
+    }
 };
 
 using Vector2i = Vector2<int>;
