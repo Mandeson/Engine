@@ -85,6 +85,10 @@ GLuint FontAtlas::getAtlasTextureId(int texture_index) {
     if (!texture.texture_generated_) {
         glGenTextures(1, &texture.texture_id_);
         glBindTexture(GL_TEXTURE_2D, texture.texture_id_);
+        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
+        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
+        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
+        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
         glTexImage2D(GL_TEXTURE_2D, 0, GL_LUMINANCE, texture_size_,
                 texture_size_, 0, GL_LUMINANCE, GL_UNSIGNED_BYTE,
                 reinterpret_cast<void *>(&texture.atlas_[0]));
