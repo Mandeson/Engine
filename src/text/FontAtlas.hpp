@@ -27,9 +27,10 @@ public:
     };
 
     FontAtlas(Font &font, float font_size);
-    Glyph &getGlyph(unsigned int codepoint);
+    Glyph &getGlyph(wchar_t codepoint);
     int getAtlasCount();
     GLuint getAtlasTextureId(int atlas_index);
+    int getTextureSize();
 private:
     struct Texture {
         Texture(int texture_size);
@@ -46,6 +47,6 @@ private:
     int texture_size_;
     Vector2i pos_ = {1, 1};
     int row_height_ = 0;
-    std::unordered_map<unsigned int, Glyph> glyphs_;
+    std::unordered_map<wchar_t, Glyph> glyphs_;
     std::vector<Texture> textures_;
 };

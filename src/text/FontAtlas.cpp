@@ -14,7 +14,7 @@ const char *FontAtlas::GlyphRenderError::what() const noexcept {
 }
 
 FontAtlas::FontAtlas(Font &font, float font_size) : font_(font), font_size_(font_size), texture_size_(256) {
-	if (font_size >= 50.0f)
+    if (font_size >= 50.0f)
 		texture_size_ *= 2;
 	if (font_size >= 100.0f)
 		texture_size_ *= 2;
@@ -24,13 +24,13 @@ FontAtlas::FontAtlas(Font &font, float font_size) : font_(font), font_size_(font
     textures_.emplace_back(texture_size_);
 }
 
-FontAtlas::Glyph &FontAtlas::getGlyph(unsigned int codepoint) {
+FontAtlas::Glyph &FontAtlas::getGlyph(wchar_t codepoint) {
     auto it = glyphs_.find(codepoint);
     if (it == glyphs_.end()) { // Glyph not yet rendered
         auto &glyph = glyphs_.emplace(codepoint, Glyph{}).first->second;
 
         FT_Set_Char_Size(font_.face_, 0, static_cast<int>(font_size_ * 64), 0, 0);
-		Log::dbg( "Rendering glyph: {}", codepoint);
+		Log::dbg( "Rendering glyph: {}", static_cast<uint32_t>(codepoint));
 		auto glyph_index = FT_Get_Char_Index(font_.face_, codepoint);
 		if (FT_Load_Glyph(font_.face_, glyph_index, FT_LOAD_DEFAULT) != 0)
 			throw GlyphNotFoundError();
@@ -103,6 +103,10 @@ GLuint FontAtlas::getAtlasTextureId(int texture_index) {
     }
     texture.dirty_ = false;
     return texture.texture_id_;
+}
+
+int FontAtlas::getTextureSize() {
+    return  texture_size_;
 }
 
 FontAtlas::Texture::Texture(int texture_size) : atlas_(texture_size * texture_size) { }

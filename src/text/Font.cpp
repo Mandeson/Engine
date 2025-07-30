@@ -38,6 +38,7 @@ Font::~Font() {
 
     fonts_--;
     if (fonts_ == 0) {
+        FT_Done_FreeType(Font::library_);
         Log::dbg("Terminated FreeType");
     }
 }
