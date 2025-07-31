@@ -10,6 +10,10 @@
 template<typename V> // Vertex type
 class BufferBuilder {
 public:
+    BufferBuilder() = default;
+    BufferBuilder(const BufferBuilder &) = delete;
+    BufferBuilder& operator=(const BufferBuilder&) = delete;
+
     virtual ~BufferBuilder() {
         if (generated_) {
             Log::dbg("Destroying buffer");

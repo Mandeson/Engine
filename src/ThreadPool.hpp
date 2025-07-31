@@ -9,6 +9,10 @@
 class ThreadPool {
 public:
     ThreadPool();
+
+    ThreadPool(const ThreadPool &) = delete;
+    ThreadPool &operator=(const ThreadPool &) = delete;
+
     ~ThreadPool();
     void execute(std::function<void()> func);
     void terminate();
