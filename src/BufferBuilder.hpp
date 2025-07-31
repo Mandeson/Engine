@@ -3,6 +3,7 @@
 #include "OpenGL.hpp"
 #include "util/Logger.hpp"
 #include <array>
+#include <atomic>
 #include <cassert>
 #include <vector>
 
@@ -20,12 +21,13 @@ public:
         vertices_.clear();
         indices_.clear();
         indice_index_ = 0;
+        dirty_ = false;
     }
     void end() {
         dirty_ = true;
     }
     void render() {
-        glDrawElements(GL_TRIANGLES, indices_.size() * 3, // A triangle has 3 vertices
+        glDrawElements(GL_TRIANGLES, render_elements_, // A triangle has 3 vertices
             GL_UNSIGNED_INT, 0);
     }
 protected:
@@ -39,7 +41,7 @@ protected:
     }
     // Call from render thread
     bool bind(GLenum usage = GL_DYNAMIC_DRAW) {
-        if (dirty_) {
+        if (dirty_) { // Dirty is never true when another thread uses the class
             if (indice_index_ == 0) { // buffer empty
                 render_ready_ = false;
                 dirty_ = false;
@@ -71,6 +73,7 @@ protected:
                         reinterpret_cast<void *>(&indices_[0]));
             }
             dirty_ = false;
+            render_elements_ = indices * 3;
             render_ready_ = true;
         } else if (generated_ && render_ready_) {
             glBindBuffer(GL_ARRAY_BUFFER, VBO_);
@@ -85,13 +88,14 @@ private:
         GLuint c;
     };
 
-    bool generated_;
-    bool dirty_;
-    bool render_ready_;
+    bool generated_ = false;
+    std::atomic<bool> dirty_ = false; // only dirty_ can be used by two threads at once
+    bool render_ready_ = false;
     std::vector<V> vertices_;
     std::vector<Triangle> indices_;
-    unsigned int indice_index_ = 0;
+    GLuint indice_index_ = 0;
     size_t allocated_indices_ = 0;
+    size_t render_elements_ = 0;
     GLuint VBO_;
     GLuint EBO_;
 };

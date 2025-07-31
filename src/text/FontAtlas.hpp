@@ -1,6 +1,7 @@
 #pragma once
 
 #include <cstdint>
+#include <mutex>
 #include <unordered_map>
 #include <vector>
 #include "../OpenGL.hpp"
@@ -49,4 +50,6 @@ private:
     int row_height_ = 0;
     std::unordered_map<wchar_t, Glyph> glyphs_;
     std::vector<Texture> textures_;
+    std::mutex mutex_;
+    static std::mutex freetype_mutex_;
 };
