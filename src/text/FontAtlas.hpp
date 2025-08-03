@@ -33,7 +33,6 @@ public:
     FontAtlas& operator=(const FontAtlas&) = delete;
 
     Glyph &getGlyph(wchar_t codepoint);
-    int getAtlasCount();
     GLuint getAtlasTextureId(int atlas_index);
     int getTextureSize();
 private:

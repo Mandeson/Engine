@@ -74,8 +74,10 @@ void Text::setString(const std::string &str, Alignment alignment, int max_width)
             for (size_t i = 0; i < length; i++) {
                 try {
                     auto &glyph = font_atlas_.getGlyph(str_[(index - length - 1) + i]);
-                    while (static_cast<int>(render_units_.size()) <= glyph.texture_index)
-                        render_units_.push_back(std::make_unique<TextureBufferBuilder>());
+                    if (static_cast<int>(render_units_.size()) <= glyph.texture_index)
+                        render_units_.resize(glyph.texture_index + 1);
+                    if(render_units_[glyph.texture_index] == nullptr)
+                        render_units_[glyph.texture_index] = std::make_unique<TextureBufferBuilder>();
                     auto &buffer_builder = render_units_[glyph.texture_index];
                     buffer_builder->addRectangle(Vector2{pen_x + glyph.offset.x, pen_y - glyph.offset.y},
                             glyph.size, TextureRect{glyph.atlas_pos, glyph.size});

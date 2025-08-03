@@ -5,12 +5,13 @@
 
 class TextRenderer {
 public:
-    TextRenderer();
+    TextRenderer(Vector2i window_size);
 
     TextRenderer(const TextRenderer &) = delete;
     TextRenderer& operator=(const TextRenderer&) = delete;
 
-    void render(Text &text);
+    void windowSize(Vector2i size);
+    void render(Text &text, Vector2f position, Color color = Color{255, 255, 255});
 private:
     Shader shader_;
     GLuint a_pos_location_;

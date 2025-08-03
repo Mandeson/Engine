@@ -74,10 +74,6 @@ FontAtlas::Glyph &FontAtlas::getGlyph(wchar_t codepoint) {
     }
 }
 
-int FontAtlas::getAtlasCount() {
-    return textures_.size();
-}
-
 GLuint FontAtlas::getAtlasTextureId(int texture_index) {
     std::scoped_lock lock{mutex_};
     for (int i = 0; i < static_cast<int>(textures_.size()) - 1; i++) { // Not the last, actively changed atlas
