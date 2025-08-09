@@ -3,6 +3,7 @@
 #include <exception>
 #include <freetype/freetype.h>
 #include <lua.hpp>
+#include <memory>
 #include <string>
 #include <unordered_map>
 #include "FontAtlas.hpp"
@@ -30,11 +31,17 @@ public:
     ~Font();
     FontAtlas &getAtlas(float font_size);
 private:
-        FT_Face face_;
+    static void add();
+    static void remove();
+
+    FT_Face face_;
     std::unordered_map<float, FontAtlas> atlases_;
 
     static int fonts_;
     static FT_Library library_;
+
+    class FileLoaderImpl;
+    std::unique_ptr<FileLoaderImpl> file_loader_impl_;
 
     friend class FontAtlas;
 };

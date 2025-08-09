@@ -1,16 +1,14 @@
 #include <format>
-#include <fstream>
-#include <filesystem>
 #include "Shader.hpp"
 
-Shader::FileNotFoundError::FileNotFoundError(std::string&& filename)
+Shader::FileNotFoundError::FileNotFoundError(std::string &&filename)
         : message_(std::format("Shader file not found: {}", filename)) { }
 
 const char* Shader::FileNotFoundError::what() const noexcept {
     return message_.c_str();
 }
 
-Shader::CompileError::CompileError(std::string&& filename, std::string&& compile_error)
+Shader::CompileError::CompileError(std::string &&filename, std::string &&compile_error)
         : message_(std::format("Shader compilation error: {}\n{}", filename, compile_error)) { }
 
 const char* Shader::CompileError::what() const noexcept {
@@ -36,28 +34,12 @@ const char* Shader::NotLoaded::what() const noexcept {
     return "Shader: using a shader that is not loaded";
 }
 
-static inline std::string _load_file(std::string& filename) {
-    try {
-        auto size = std::filesystem::file_size(filename);
-        std::string text(size, '\0');
-        std::ifstream in(filename);
-        if (in.fail())
-            throw Shader::FileNotFoundError(std::move(filename));
-        in.read(&text[0], size);
-        return text;
-    } catch (std::filesystem::filesystem_error& e) {
-        throw Shader::FileNotFoundError(std::move(filename));
-    }
-}
-
-static GLuint _compile(std::string&& filename, GLenum type)
+GLuint Shader::compile(std::string &&filename, GLenum type)
 {
-    std::string text = _load_file(filename);
-    const GLchar* text_c_str = text.c_str();
     GLuint shader = glCreateShader(type);
     if (shader == 0)
         throw std::runtime_error("Could not create an OpenGL Shader object");
-    glShaderSource(shader, 1, &text_c_str, 0);
+    Shader::loadSourceImpl(shader, filename);
     glCompileShader(shader);
     GLint status;
     glGetShaderiv(shader, GL_COMPILE_STATUS, &status);
@@ -71,22 +53,22 @@ static GLuint _compile(std::string&& filename, GLenum type)
     return shader;
 }
 
-Shader::Shader(const char *name) {
+Shader::Shader(const std::string &name) {
     id_ = glCreateProgram();
     if (id_ == 0)
         throw std::runtime_error("Could not create an OpenGL Program object");
 
 #ifdef USE_GLES2
-    std::string path = "assets/shaders/GLES/";
+    std::string path = "shaders/GLES/";
 #else
-    std::string path = "assets/shaders/GL/";
+    std::string path = "shaders/GL/";
 #endif
 
-    GLuint vertex = _compile(path + name + ".vs", GL_VERTEX_SHADER);
+    GLuint vertex = Shader::compile(path + name + ".vs", GL_VERTEX_SHADER);
     glAttachShader(id_, vertex);
     glDeleteShader(vertex);
 
-    GLuint fragment = _compile(path + name + ".fs", GL_FRAGMENT_SHADER);
+    GLuint fragment = Shader::compile(path + name + ".fs", GL_FRAGMENT_SHADER);
     glAttachShader(id_, fragment);
     glDeleteShader(fragment);
 

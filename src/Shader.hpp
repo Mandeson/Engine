@@ -45,7 +45,7 @@ public:
     /* Load the shader from disk and compile with OpenGL
      * Must be called from the opengl context thread
      */
-    Shader(const char *name);
+    Shader(const std::string &name);
     Shader(const Shader &) = delete;
     Shader& operator=(const Shader &) = delete;
     ~Shader();
@@ -59,5 +59,8 @@ public:
     // Set a vec3 uniform to normalized color data
     static void setUniformColor(GLuint uniform_location, Color color);
 private:
+    static void loadSourceImpl(GLuint shader, std::string &filename);
+    static GLuint compile(std::string &&filename, GLenum type);
+
     GLuint id_{};
 };
