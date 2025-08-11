@@ -105,7 +105,10 @@ void Text::setString(const std::string &str, Alignment alignment, int max_width)
         //text->_dimensions.height = penY - (int)(lineHeight * 0.8) - p->penYInit;
         for (auto &buffer : render_units_)
             buffer->end();
-        background_work_active_ = false;
+        {
+            std::scoped_lock lock{mutex_};
+            background_work_active_ = false;
+        }
         background_work_condition_.notify_all();
     });
 }
