@@ -1,12 +1,12 @@
 cmake_minimum_required(VERSION 3.16)
 
+set(CMAKE_CXX_STANDARD 20)
+set(CMAKE_CXX_STANDARD_REQUIRED True)
+
 if (CMAKE_SYSTEM_NAME STREQUAL "Linux")
     find_package(Lua REQUIRED)
     find_package(glm REQUIRED)
     find_package(Freetype REQUIRED)
-    if (DESKTOP)
-        find_package(glfw3 REQUIRED)
-    endif()
 else()
     include(FetchContent)
 
@@ -30,8 +30,18 @@ else()
         GIT_TAG 	b04db3872cfac5ee4fd4f895933cebce3576fbf0
     )
     FetchContent_MakeAvailable(freetype)
+endif()
 
-    if (DESKTOP)
+file(GLOB_RECURSE SOURCES "*.cpp")
+
+list(FILTER SOURCES EXCLUDE REGEX "platform/.*$")
+
+set(LIBRARIES glm::glm)
+
+if (DESKTOP)
+    if (CMAKE_SYSTEM_NAME STREQUAL "Linux")
+        find_package(glfw3 REQUIRED)
+    else()
         FetchContent_Declare(
             glfw
             GIT_REPOSITORY	https://github.com/glfw/glfw.git
@@ -39,29 +49,35 @@ else()
         )
         FetchContent_MakeAvailable(glfw)
     endif()
-endif()
-
-file(GLOB_RECURSE SOURCES "*.cpp")
-
-list(FILTER SOURCES EXCLUDE REGEX "platform/.*$")
-
-if (DESKTOP)
     file(GLOB_RECURSE DESKTOP_SOURCES "platform/desktop/*.cpp")
     list(APPEND SOURCES ${DESKTOP_SOURCES})
+    add_executable(Game ${SOURCES})
+    list(APPEND LIBRARIES glad glfw)
+elseif (CMAKE_SYSTEM_NAME STREQUAL "Android")
+    find_package(game-activity REQUIRED CONFIG)
+    file(GLOB_RECURSE ANDROID_SOURCES "platform/android/*.cpp")
+    list(APPEND SOURCES ${ANDROID_SOURCES})
+    add_library(engine SHARED ${SOURCES})
 endif()
 
-set(CMAKE_CXX_STANDARD 23)
-set(CMAKE_CXX_STANDARD_REQUIRED True)
-
-add_executable(Game ${SOURCES})
-target_link_libraries(Game PRIVATE glad glm::glm)
-
 if (CMAKE_SYSTEM_NAME STREQUAL "Linux")
-    target_link_libraries(Game PRIVATE lua Freetype::Freetype)
+    list(APPEND LIBRARIES lua Freetype::Freetype)
 else()
-    target_link_libraries(Game PRIVATE lua_static freetype)
+    list(APPEND LIBRARIES lua_static freetype)
+endif()
+
+if (CMAKE_SYSTEM_NAME STREQUAL "Android")
+    list(APPEND LIBRARIES
+        game-activity::game-activity
+        EGL
+        GLESv3
+        jnigraphics
+        android
+        log)
 endif()
 
 if (DESKTOP)
-    target_link_libraries(Game PRIVATE glfw)
+    target_link_libraries(Game PRIVATE ${LIBRARIES})
+else()
+    target_link_libraries(engine ${LIBRARIES})
 endif()

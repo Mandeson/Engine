@@ -2,6 +2,15 @@ cmake_minimum_required(VERSION 3.16)
 
 project(Game LANGUAGES CXX)
 
+if (CMAKE_SYSTEM_NAME STREQUAL "Android")
+    if ((CMAKE_ANDROID_ARCH STREQUAL "arm") OR (CMAKE_ANDROID_ARCH STREQUAL "x86"))
+        # Old Android versions do not support fseeko and ftello on 32-bit systems.
+        # However, these functions are used by Lua and I think that adding the macros below is better than
+        # dropping support of older API versions or manually forking and patching Lua.
+        add_compile_definitions(fseeko=fseek ftello=ftell)
+    endif()
+endif()
+
 set(CMAKE_CXX_FLAGS "-Wall")
 set(CMAKE_CXX_FLAGS_DEBUG "-g3")
 set(CMAKE_CXX_FLAGS_RELEASE "-O3")
