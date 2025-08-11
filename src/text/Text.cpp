@@ -10,6 +10,13 @@ Text::Text(ThreadPool &thread_pool, Font &font, float font_size, const std::stri
     setString(str, alignment, max_width);
 }
 
+Text::~Text() {
+    std::unique_lock lock(mutex_);
+    background_work_condition_.wait(lock, [this]{
+        return !background_work_active_;
+    });
+}
+
 void Text::setString(const std::string &str, Alignment alignment, int max_width) {
     std::unique_lock lock(mutex_);
     background_work_condition_.wait(lock, [this]{

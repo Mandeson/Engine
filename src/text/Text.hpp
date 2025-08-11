@@ -2,6 +2,7 @@
 
 #include <climits>
 #include <condition_variable>
+#include <memory>
 #include <mutex>
 #include <string>
 #include <vector>
@@ -12,7 +13,7 @@
 
 class TextRenderer;
 
-class Text {
+class Text : std::enable_shared_from_this<Text> {
 public:
     enum class Alignment {
         kLeft,
@@ -23,6 +24,8 @@ public:
     Text(const Text &) = delete;
     Text& operator=(const Text&) = delete;
 
+    ~Text();
+
     void setString(const std::string &str, Alignment alignment = Alignment::kLeft, int max_width = INT_MAX);
 private:
     ThreadPool &thread_pool_;
@@ -30,7 +33,10 @@ private:
     bool background_work_active_ = false;
     float font_size_;
     std::wstring str_;
+
+    // must use unique_ptr, because TextureBufferBuilder cannot be moved (it contains an atomic field)
     std::vector<std::unique_ptr<TextureBufferBuilder>> render_units_;
+    
     std::mutex mutex_;
     std::condition_variable background_work_condition_;
 
