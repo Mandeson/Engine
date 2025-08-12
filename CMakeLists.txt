@@ -11,7 +11,6 @@ if (CMAKE_SYSTEM_NAME STREQUAL "Android")
     endif()
 endif()
 
-set(CMAKE_CXX_FLAGS "-Wall")
 set(CMAKE_CXX_FLAGS_DEBUG "-g3")
 set(CMAKE_CXX_FLAGS_RELEASE "-O3")
 
@@ -19,5 +18,7 @@ if ((CMAKE_SYSTEM_NAME STREQUAL "Linux") OR (CMAKE_SYSTEM_NAME STREQUAL "Windows
     set(DESKTOP TRUE)
     add_subdirectory(lib/Glad)
 endif()
+add_subdirectory(lib/upng)
 
+set(CMAKE_CXX_FLAGS "-Wall")
 add_subdirectory(src)

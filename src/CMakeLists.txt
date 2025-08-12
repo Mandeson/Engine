@@ -7,6 +7,7 @@ if (CMAKE_SYSTEM_NAME STREQUAL "Linux")
     find_package(Lua REQUIRED)
     find_package(glm REQUIRED)
     find_package(Freetype REQUIRED)
+    find_package(nlohmann_json REQUIRED)
 else()
     include(FetchContent)
 
@@ -30,13 +31,17 @@ else()
         GIT_TAG 	b04db3872cfac5ee4fd4f895933cebce3576fbf0
     )
     FetchContent_MakeAvailable(freetype)
+
+    cmake_policy(SET CMP0135 NEW)
+    FetchContent_Declare(json URL https://github.com/nlohmann/json/releases/download/v3.12.0/json.tar.xz)
+    FetchContent_MakeAvailable(json)
 endif()
 
 file(GLOB_RECURSE SOURCES "*.cpp")
 
 list(FILTER SOURCES EXCLUDE REGEX "platform/.*$")
 
-set(LIBRARIES glm::glm)
+set(LIBRARIES glm::glm nlohmann_json::nlohmann_json)
 
 if (DESKTOP)
     if (CMAKE_SYSTEM_NAME STREQUAL "Linux")
