@@ -78,8 +78,8 @@ int main() {
 				Log::info("<Desktop> Got random seed from time(0): {}", random_seed);
 			}
 #else
-			int randomSeed = time(0);
-			Log::info("Got random seed from time(0): {}", randomSeed);
+			int random_seed = time(0);
+			Log::info("<Desktop> Got random seed from time(0): {}", random_seed);
 #endif
 			std::shared_ptr<Game> game;
 			try {
