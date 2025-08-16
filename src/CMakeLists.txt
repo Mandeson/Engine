@@ -41,7 +41,7 @@ file(GLOB_RECURSE SOURCES "*.cpp")
 
 list(FILTER SOURCES EXCLUDE REGEX "platform/.*$")
 
-set(LIBRARIES glm::glm nlohmann_json::nlohmann_json)
+set(LIBRARIES upng glm::glm nlohmann_json::nlohmann_json)
 
 if (DESKTOP)
     if (CMAKE_SYSTEM_NAME STREQUAL "Linux")
