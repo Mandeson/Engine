@@ -82,6 +82,10 @@ void Texture::bind() {
     }
 }
 
+Vector2i Texture::getSize() {
+    return size_;
+}
+
 void Texture::decode(std::string &&filename, upng_t *upng) {
     upng_decode(upng);
     if (upng_get_error(upng) != UPNG_EOK)

@@ -33,6 +33,7 @@ public:
     ~Texture();
     bool ready();
     void bind();
+    Vector2i getSize();
 private:
     void loadImpl(const std::string &filename);
     void decode(std::string &&filename, upng_t *upng);
