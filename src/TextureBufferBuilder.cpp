@@ -2,10 +2,14 @@
 #include "BufferBuilder.hpp"
 #include "OpenGL.hpp"
 
-void TextureBufferBuilder::addRectangle(Vector2<int16_t> pos, Vector2<int16_t> size, TextureRect texture_rect) {
+void TextureBufferBuilder::addRectangle(Vector2<int16_t> pos, Vector2<int16_t> size, TextureRect texture_rect, bool horizontal_flip, bool vertical_flip) {
     auto pos_d = pos + size;
-    auto tex_pos = texture_rect.pos;
-    auto tex_pos_d = texture_rect.pos + texture_rect.size;
+    Vector2<uint16_t> tex_pos = texture_rect.pos;
+    Vector2<uint16_t> tex_pos_d = texture_rect.pos + texture_rect.size;
+    if (horizontal_flip)
+        std::swap(tex_pos.x, tex_pos_d.x);
+    if (vertical_flip)
+        std::swap(tex_pos.y, tex_pos_d.y);
     std::array<TextureBufferBuilderVertex, 4> vertices = {
         TextureBufferBuilderVertex{{pos.x,   pos.y  }, {tex_pos.x,   tex_pos.y  }},
         TextureBufferBuilderVertex{{pos_d.x, pos.y  }, {tex_pos_d.x, tex_pos.y  }},
