@@ -17,6 +17,8 @@ void TextRenderer::windowSize(Vector2i size) {
 }
 
 void TextRenderer::render(Text &text, Vector2f position, Color color) {
+    // while text is being rendered, we need to block render units (the vector may be resized in another thread)
+    std::scoped_lock lock{text.mutex_};
     size_t units_count = text.render_units_.size();
     for (size_t i = 0; i < units_count; i++) {
         auto &buffer = text.render_units_[i];

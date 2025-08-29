@@ -18,14 +18,16 @@ Text::~Text() {
 }
 
 void Text::setString(const std::string &str, Alignment alignment, int max_width) {
-    std::unique_lock lock(mutex_);
-    background_work_condition_.wait(lock, [this]{
-        return !background_work_active_;
-    });
-    background_work_active_ = true;
-    UTF8::decode(str_, str);
-    for (auto &buffer : render_units_)
-        buffer->clear();
+    {
+        std::unique_lock lock(mutex_);
+        background_work_condition_.wait(lock, [this]{
+            return !background_work_active_;
+        });
+        background_work_active_ = true;
+        UTF8::decode(str_, str);
+        for (auto &buffer : render_units_)
+            buffer->clear();
+    }
     thread_pool_.execute([this, alignment, max_width]{
         int line_height = static_cast<int>(font_size_ * 1.15f);
         int pen_x = 0;
@@ -81,11 +83,15 @@ void Text::setString(const std::string &str, Alignment alignment, int max_width)
             for (size_t i = 0; i < length; i++) {
                 try {
                     auto &glyph = font_atlas_.getGlyph(str_[(index - length - 1) + i]);
-                    if (static_cast<int>(render_units_.size()) <= glyph.texture_index)
-                        render_units_.resize(glyph.texture_index + 1);
-                    if(render_units_[glyph.texture_index] == nullptr)
-                        render_units_[glyph.texture_index] = std::make_unique<TextureBufferBuilder>();
+                    { // adding, constructing elements and resizing a vector that may be read by the main thread
+                        std::scoped_lock lock{mutex_};
+                        if (static_cast<int>(render_units_.size()) <= glyph.texture_index)
+                            render_units_.resize(glyph.texture_index + 1);
+                        if (render_units_[glyph.texture_index] == nullptr)
+                            render_units_[glyph.texture_index] = std::make_unique<TextureBufferBuilder>();
+                    }
                     auto &buffer_builder = render_units_[glyph.texture_index];
+                    // addRectangle is thread safe, the atomic flag inside BufferBuilder guards its state
                     buffer_builder->addRectangle(Vector2{pen_x + glyph.offset.x, pen_y - glyph.offset.y},
                             glyph.size, TextureRect{glyph.atlas_pos, glyph.size});
                     pen_x += glyph.advance.x / 64;
@@ -103,10 +109,10 @@ void Text::setString(const std::string &str, Alignment alignment, int max_width)
         str_ = std::wstring();
         //text->_dimensions.width = maxFinalWidth;
         //text->_dimensions.height = penY - (int)(lineHeight * 0.8) - p->penYInit;
-        for (auto &buffer : render_units_)
-            buffer->end();
         {
             std::scoped_lock lock{mutex_};
+            for (auto &buffer : render_units_) // after mutex lock to avoid partially rendered text
+                buffer->end();
             background_work_active_ = false;
         }
         background_work_condition_.notify_all();
