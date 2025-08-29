@@ -5,23 +5,32 @@
 #include <string_view>
 
 namespace Log {
-    template<typename... Args>
-    void info(std::string_view str, Args&&... args) {
-        std::cout << "[Info] " << std::vformat(str, std::make_format_args(args...)) << std::endl;
-    }
 
-    template<typename... Args>
-    void err(std::string_view str, Args&&... args) {
-        std::cerr << "[Error] " << std::vformat(str, std::make_format_args(args...)) << std::endl;
-    }
+void printLineInfoImpl(const std::string &str);
+void printLineErrImpl(const std::string &str);
+void printLineWarnImpl(const std::string &str);
+void printLineDbgImpl(const std::string &str);
 
-    template<typename... Args>
-    void warn(std::string_view str, Args&&... args) {
-        std::cerr << "[Warning] "<<  std::vformat(str, std::make_format_args(args...)) << std::endl;
-    }
+template<typename... Args>
+void info(std::string_view str, Args&&... args) {
+    printLineInfoImpl(std::vformat(str, std::make_format_args(args...)));
+}
 
-    template<typename... Args>
-    void dbg(std::string_view str, Args&&... args) {
-        std::cout << "[Debug] " << std::vformat(str, std::make_format_args(args...)) << std::endl;
-    }
+template<typename... Args>
+void err(std::string_view str, Args&&... args) {
+    printLineErrImpl(std::vformat(str, std::make_format_args(args...)));
+}
+
+template<typename... Args>
+void warn(std::string_view str, Args&&... args) {
+    printLineWarnImpl(std::vformat(str, std::make_format_args(args...)));
+}
+
+template<typename... Args>
+void dbg(std::string_view str, Args&&... args) {
+#ifdef ENGINE_DEBUG
+    printLineDbgImpl(std::vformat(str, std::make_format_args(args...)));
+#endif
+}
+
 }
