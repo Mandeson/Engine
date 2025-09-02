@@ -20,5 +20,6 @@ private:
     GLuint u_texture_size_location_;
     GLuint u_pos_location_;
     GLuint u_color_location_;
+    GLuint u_scale_location_;
 };
 

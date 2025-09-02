@@ -42,14 +42,14 @@ FontAtlas::Glyph &FontAtlas::getGlyph(wchar_t codepoint) {
 		FT_GlyphSlot g = font_.face_->glyph;
         Vector2i glyph_size = {static_cast<int>(g->bitmap.width), static_cast<int>(g->bitmap.rows)};
 		if (pos_.x + glyph_size.x >= texture_size_) { // No space left in the current row
-			pos_.x = 1;
-			pos_.y += row_height_ + 1;
+			pos_.x = kMargin;
+			pos_.y += row_height_ + kMargin;
 			row_height_ = 0;
 		}
 		if (pos_.y + glyph_size.y >= texture_size_) { // Texture full
             // TODO: if it's the first glyph in this texture, throw exception
 			Log::dbg("Font atlas full");
-            pos_ = {1, 1};
+            pos_ = {kMargin, kMargin};
             row_height_ = 0;
             textures_.emplace_back(texture_size_);
 		}
@@ -66,7 +66,7 @@ FontAtlas::Glyph &FontAtlas::getGlyph(wchar_t codepoint) {
                 .size = Vector2{g->bitmap.width, g->bitmap.rows},
                 .offset = Vector2{g->bitmap_left, g->bitmap_top},
                 .advance = Vector2{g->advance.x, g->advance.y}}).first->second;
-		pos_.x += g->bitmap.width + 1;
+		pos_.x += g->bitmap.width + kMargin;
         last_texture.dirty_ = true;
         return glyph;
     } else {
@@ -86,8 +86,8 @@ GLuint FontAtlas::getAtlasTextureId(int texture_index) {
     if (!texture.texture_generated_) {
         glGenTextures(1, &texture.texture_id_);
         glBindTexture(GL_TEXTURE_2D, texture.texture_id_);
-        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
-        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
+        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
         glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
         glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
         glTexImage2D(GL_TEXTURE_2D, 0, GL_LUMINANCE, texture_size_,

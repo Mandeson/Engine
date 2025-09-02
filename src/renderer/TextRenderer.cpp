@@ -8,6 +8,7 @@ TextRenderer::TextRenderer(Vector2i window_size) : shader_("text") {
     u_texture_size_location_ = shader_.getUniformLocation("uTextureSize");
     u_pos_location_ = shader_.getUniformLocation("uPos");
     u_color_location_ = shader_.getUniformLocation("uColor");
+    u_scale_location_ = shader_.getUniformLocation("uScale");
     windowSize(window_size);
 }
 
@@ -29,6 +30,7 @@ void TextRenderer::render(Text &text, Vector2f position, Color color) {
                 Shader::setUniform1f(u_texture_size_location_, 1.0f / text.font_atlas_.getTextureSize());
                 Shader::setUniform2f(u_pos_location_, position);
                 Shader::setUniformColor(u_color_location_, color);
+                Shader::setUniform1f(u_scale_location_, text.scale_);
                 buffer->render();
             }
         }

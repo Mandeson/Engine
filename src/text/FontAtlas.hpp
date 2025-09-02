@@ -46,10 +46,12 @@ private:
         bool dirty_;
     };
 
+    static constexpr int kMargin = 2;
+
     Font &font_;
     float font_size_;
     int texture_size_;
-    Vector2i pos_ = {1, 1};
+    Vector2i pos_ = {kMargin, kMargin};
     int row_height_ = 0;
     std::unordered_map<wchar_t, Glyph> glyphs_;
     std::vector<Texture> textures_;

@@ -27,6 +27,7 @@ public:
     ~Text();
 
     void setString(const std::string &str, Alignment alignment = Alignment::kLeft, int max_width = INT_MAX);
+    void setScale(float scale);
 private:
     ThreadPool &thread_pool_;
     FontAtlas &font_atlas_;
@@ -39,6 +40,8 @@ private:
     
     std::mutex mutex_;
     std::condition_variable background_work_condition_;
+
+    float scale_ = 1.0f;
 
     friend class TextRenderer;
 };

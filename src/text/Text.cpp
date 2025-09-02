@@ -92,8 +92,9 @@ void Text::setString(const std::string &str, Alignment alignment, int max_width)
                     }
                     auto &buffer_builder = render_units_[glyph.texture_index];
                     // addRectangle is thread safe, the atomic flag inside BufferBuilder guards its state
-                    buffer_builder->addRectangle(Vector2{pen_x + glyph.offset.x, pen_y - glyph.offset.y},
-                            glyph.size, TextureRect{glyph.atlas_pos, glyph.size});
+                    buffer_builder->addRectangle(Vector2{pen_x + glyph.offset.x - 1, pen_y - glyph.offset.y - 1},
+                            glyph.size + Vector2{2, 2}, TextureRect{glyph.atlas_pos - Vector2{1, 1},
+                            glyph.size + Vector2{2, 2}}); // margins of 1px at each side to prevent sharp edges when using float coordinates
                     pen_x += glyph.advance.x / 64;
                     pen_y += glyph.advance.y / 64;
                 } catch (FontAtlas::GlyphNotFoundError &) {
@@ -117,4 +118,8 @@ void Text::setString(const std::string &str, Alignment alignment, int max_width)
         }
         background_work_condition_.notify_all();
     });
+}
+
+void Text::setScale(float scale) {
+    scale_ = scale;
 }
