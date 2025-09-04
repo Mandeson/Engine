@@ -58,11 +58,11 @@ Shader::Shader(const std::string &name) {
     if (id_ == 0)
         throw std::runtime_error("Could not create an OpenGL Program object");
 
-#ifdef USE_GLES2
-    std::string path = "shaders/GLES/";
-#else
-    std::string path = "shaders/GL/";
-#endif
+    std::string path;
+    if (OpenGL::isGLES())
+        path = "shaders/GLES/";
+    else
+        path = "shaders/GL/";
 
     GLuint vertex = Shader::compile(path + name + ".vs", GL_VERTEX_SHADER);
     glAttachShader(id_, vertex);

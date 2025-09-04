@@ -15,11 +15,53 @@
 #include "../../EngineContext.hpp"
 
 constexpr Vector2i kWindowDefaultSize = {800, 600};
+constexpr const char *kWindowTitle = "Game";
+constexpr const char *kRunningOpenGLVersionText = "<Desktop> Running OpenGL {}";
+
+void (*OpenGL::glBindFramebufferPtr)(GLenum, GLuint);
+void (*OpenGL::glDeleteFramebuffersPtr)(GLsizei, const GLuint *);
+void (*OpenGL::glGenFramebuffersPtr)(GLsizei, GLuint *);
+GLenum (*OpenGL::glCheckFramebufferStatusPtr)(GLenum);
+void (*OpenGL::glFramebufferTexture2DPtr)(GLenum, GLenum, GLenum, GLuint, GLint);
 
 std::weak_ptr<Game> g_game;
+bool g_is_gles = false;
 
 void framebuffer_size_callback(GLFWwindow *window, int width, int height);
 void key_callback(GLFWwindow* window, int key, int scancode, int action, int mods);
+
+static void setupGLES() {
+	glfwWindowHint(GLFW_CLIENT_API, GLFW_OPENGL_ES_API);
+	glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, 2);
+	glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 0);
+}
+
+static void loadDefaultOpenGLFramebufferPtrs() {
+	OpenGL::glBindFramebufferPtr = glBindFramebuffer;
+	OpenGL::glDeleteFramebuffersPtr = glDeleteFramebuffers;
+	OpenGL::glGenFramebuffersPtr = glGenFramebuffers;
+	OpenGL::glCheckFramebufferStatusPtr = glCheckFramebufferStatus;
+	OpenGL::glFramebufferTexture2DPtr = glFramebufferTexture2D;
+}
+
+static void loadExtensionOpenGLFramebufferPtrs() {
+	OpenGL::glBindFramebufferPtr = glBindFramebufferEXT;
+	OpenGL::glDeleteFramebuffersPtr = glDeleteFramebuffersEXT;
+	OpenGL::glGenFramebuffersPtr = glGenFramebuffersEXT;
+	OpenGL::glCheckFramebufferStatusPtr = glCheckFramebufferStatusEXT;
+	OpenGL::glFramebufferTexture2DPtr = glFramebufferTexture2DEXT;
+}
+
+static GLFWwindow *createWindow(Vector2i window_size, Vector2i monitor_size) {
+	GLFWwindow *window = glfwCreateWindow(window_size.x, window_size.y, kWindowTitle, NULL, NULL);
+	if (window != NULL) {
+		glfwSetWindowPos(window, std::max(0, monitor_size.x / 2 - window_size.x / 2),
+			std::max(31, monitor_size.y / 2 - window_size.y / 2));
+		glfwMakeContextCurrent(window);
+		glfwSwapInterval(1);
+	}
+	return window;
+}
 
 int main() {
     if (!glfwInit()) {
@@ -41,24 +83,54 @@ int main() {
 	else if (monitor_size.y >= 2000)
 		ui_scale = 2.0f;
 	Vector2i window_size = kWindowDefaultSize * ui_scale;
-	GLFWwindow *window = glfwCreateWindow(window_size.x, window_size.y, "Game", NULL, NULL);
+#ifdef FORCE_GLES
+	setupGLES();
+#endif
+	GLFWwindow *window = createWindow(window_size, monitor_size);
 	if (window != NULL) {
 		Log::info("<Desktop> Created window");
-		glfwSetWindowPos(window, std::max(0, monitor_size.x / 2 - window_size.x / 2),
-			std::max(31, monitor_size.y / 2 - window_size.y / 2));
-		glfwMakeContextCurrent(window);
-		glfwSwapInterval(1);
-#ifdef USE_GLES2
-		int success = gladLoadGLES2Loader((GLADloadproc)glfwGetProcAddress);
+		bool error = false;
+#ifdef FORCE_GLES
+		if (gladLoadGLES2Loader((GLADloadproc)glfwGetProcAddress)) {
+			if (GLAD_GL_ES_VERSION_2_0) {
+				g_is_gles = true;
+				loadDefaultOpenGLFramebufferPtrs();
+				Log::info(kRunningOpenGLVersionText, "ES 2.0");
+			} else {
+				error = true;
+				Log::info("<Desktop> OpenGL version too old. Engine requires OpenGL ES 2.0");
+			}
+		} else {
+			error = true;
+		}
 #else
-		int success = gladLoadGLLoader((GLADloadproc)glfwGetProcAddress);
+		if (gladLoadGLLoader((GLADloadproc)glfwGetProcAddress)) {
+			if (GLAD_GL_VERSION_3_0) {
+				loadDefaultOpenGLFramebufferPtrs();
+				Log::info(kRunningOpenGLVersionText, "3.0");
+			} else if (GLAD_GL_VERSION_2_1 && GLAD_GL_EXT_framebuffer_object) {
+				loadExtensionOpenGLFramebufferPtrs();
+				Log::info(kRunningOpenGLVersionText, "2.1 (GL_EXT_framebuffer_object)");
+			} else {
+				glfwDestroyWindow(window);
+				setupGLES();
+				window = createWindow(window_size, monitor_size);
+				if (window != NULL && gladLoadGLES2Loader((GLADloadproc)glfwGetProcAddress) && GLAD_GL_ES_VERSION_2_0) {
+					g_is_gles = true;
+					loadDefaultOpenGLFramebufferPtrs();
+					Log::info(kRunningOpenGLVersionText, "ES 2.0");
+				} else {
+					error = true;
+					Log::info("<Desktop> OpenGL version too old. Engine requires either OpenGL 3.0, "
+							"OpenGL 2.1 + GL_EXT_framebuffer_object or OpenGL ES 2.0");
+				}
+			}
+		} else {
+			error = true;
+		}
 #endif
-		if(success) {
-#ifdef USE_GLES2
-			Log::info("<Desktop> Running OpenGL ES version: {}", (const char *)glGetString(GL_VERSION));
-#else
-			Log::info("<Desktop> Running OpenGL version: {}", (const char *)glGetString(GL_VERSION));
-#endif
+		if(!error) {
+			Log::info("<Desktop> Available OpenGL version: {}", (const char *)glGetString(GL_VERSION));
 			// Clear the screen to black
 			glClearColor(0.0, 0.0, 0.0, 1.0);
 			glClear(GL_COLOR_BUFFER_BIT);
@@ -124,6 +196,10 @@ int main() {
 
 std::shared_ptr<Game> EngineContext::game() {
 	return g_game.lock();
+}
+
+bool OpenGL::isGLES() {
+	return g_is_gles;
 }
 
 void framebuffer_size_callback(GLFWwindow *window, int width, int height) {

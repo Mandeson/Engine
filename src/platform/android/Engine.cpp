@@ -3,12 +3,30 @@
 #include "../../EngineContext.hpp"
 #include "../../util/Logger.hpp"
 
+void (*OpenGL::glBindFramebufferPtr)(GLenum, GLuint);
+void (*OpenGL::glDeleteFramebuffersPtr)(GLsizei, const GLuint *);
+void (*OpenGL::glGenFramebuffersPtr)(GLsizei, GLuint *);
+GLenum (*OpenGL::glCheckFramebufferStatusPtr)(GLenum);
+void (*OpenGL::glFramebufferTexture2DPtr)(GLenum, GLenum, GLenum, GLuint, GLint);
+
 std::weak_ptr<Game> g_game;
+
+static void loadDefaultOpenGLFramebufferPtrs() {
+    OpenGL::glBindFramebufferPtr = glBindFramebuffer;
+    OpenGL::glDeleteFramebuffersPtr = glDeleteFramebuffers;
+    OpenGL::glGenFramebuffersPtr = glGenFramebuffers;
+    OpenGL::glCheckFramebufferStatusPtr = glCheckFramebufferStatus;
+    OpenGL::glFramebufferTexture2DPtr = glFramebufferTexture2D;
+}
 
 std::shared_ptr<Game> EngineContext::game() {
     if (g_game.expired())
         throw std::runtime_error("null Game pointer detected");
     return g_game.lock();
+}
+
+bool OpenGL::isGLES() {
+	return true;
 }
 
 EngineImpl::EngineImpl(struct android_app *app)
@@ -217,6 +235,7 @@ bool EngineImpl::initContext() {
         return false;
     }
     Log::info("<Android> Initialized context");
+    loadDefaultOpenGLFramebufferPtrs();
     return true;
 }
 
