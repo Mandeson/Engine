@@ -9,7 +9,7 @@ Map::Chunk::Chunk(const std::map<int, size_t, std::greater<int>> &tileset_indexe
             throw std::runtime_error("<Map::Chunk> Unsupported chunk size");
     Vector2i tile_pos = {0, 0};
     for (const auto &tile_id_data : data.at("data")) {
-        uint32_t tile_code = tile_id_data.template get<uint32_t>();
+        int tile_code = tile_id_data.template get<int>();
         if (tile_code != 0) {
             bool horizontal_flip = tile_code & 0x80000000;
             bool vertical_flip = tile_code & 0x40000000;
@@ -110,4 +110,8 @@ bool Map::ready() {
         if (!tileset->ready())
             return false;
     return true;
+}
+
+int Map::getTileSize() {
+    return tile_size_;
 }

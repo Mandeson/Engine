@@ -36,6 +36,7 @@ public:
     ~Map();
 
     bool ready();
+    int getTileSize();
 private:
     bool background_work_active_;
     std::mutex mutex_;
