@@ -40,6 +40,12 @@ android {
         }
         release {
             isMinifyEnabled = false
+            isDebuggable = false
+            isJniDebuggable = false
+            ndk {
+                isDebuggable = false
+                abiFilters += listOf("armeabi-v7a", "arm64-v8a")
+            }
             proguardFiles(
                 getDefaultProguardFile("proguard-android-optimize.txt"),
                 "proguard-rules.pro"
