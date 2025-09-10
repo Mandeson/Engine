@@ -13,12 +13,13 @@
 
 class TextRenderer;
 
-class Text : std::enable_shared_from_this<Text> {
+class Text {
 public:
     enum class Alignment {
         kLeft,
         kCenter
     };
+    Text(ThreadPool &thread_pool, Font &font, float font_size);
     Text(ThreadPool &thread_pool, Font &font, float font_size, const std::string &str, Alignment alignment = Alignment::kLeft, int max_width = INT_MAX);
 
     Text(const Text &) = delete;

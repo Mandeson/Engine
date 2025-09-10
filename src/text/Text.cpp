@@ -5,6 +5,9 @@
 #include <mutex>
 #include <string>
 
+Text::Text(ThreadPool &thread_pool, Font &font, float font_size)
+        : thread_pool_(thread_pool), font_atlas_(font.getAtlas(font_size)), font_size_(font_size) { }
+
 Text::Text(ThreadPool &thread_pool, Font &font, float font_size, const std::string &str, Alignment alignment, int max_width)
         : thread_pool_(thread_pool), font_atlas_(font.getAtlas(font_size)), font_size_(font_size) {
     setString(str, alignment, max_width);
