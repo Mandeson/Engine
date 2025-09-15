@@ -195,6 +195,8 @@ int main() {
 }
 
 std::shared_ptr<Game> EngineContext::game() {
+	if (g_game.expired())
+        throw std::runtime_error("Null pointer detected by EngineContext::game()");
 	return g_game.lock();
 }
 
