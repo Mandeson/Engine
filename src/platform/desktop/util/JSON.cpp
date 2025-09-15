@@ -2,6 +2,9 @@
 #include <fstream>
 
 json JSON::parseFileImpl(const std::string &filename) {
-    std::ifstream file("assets/" + filename);
+    std::string path = "assets/" + filename;
+    std::ifstream file(path);
+    if (!file)
+        throw FileLoadingError(path);
     return json::parse(file);
 }
