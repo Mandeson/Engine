@@ -2,7 +2,6 @@
 #include <format>
 #include <freetype/freetype.h>
 #include <freetype/fttypes.h>
-#include <lua.h>
 #include "../util/Logger.hpp"
 
 int Font::fonts_ = 0;

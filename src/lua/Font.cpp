@@ -51,7 +51,7 @@ int Lua::Font::loadS(lua_State *L) noexcept {
 
 int Lua::Font::getDefaultS(lua_State *L) noexcept {
     FontLua *ptr = reinterpret_cast<FontLua *>(lua_newuserdata(L, sizeof(FontLua)));
-    ptr->font = EngineContext::game()->getDefaultFont();
+    ptr->font = &EngineContext::game()->getDefaultFont();
     ptr->destructible = false;
     Log::dbg("font getDefaultLua");
     if (luaL_newmetatable(L, kLuaMetaTable)) {

@@ -1,0 +1,5 @@
+game = {
+    init = function()
+        
+    end
+}
