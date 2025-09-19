@@ -1,6 +1,14 @@
 cmake_minimum_required(VERSION 3.16)
 
-project(Game LANGUAGES CXX)
+project(Engine LANGUAGES CXX)
+
+find_package(Git QUIET)
+execute_process(COMMAND ${GIT_EXECUTABLE} submodule update --init --recursive
+                WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}
+                RESULT_VARIABLE GIT_SUBMODULE_RESULT)
+if(NOT GIT_SUBMODULE_RESULT EQUAL "0")
+    message(WARNING "Could not download git submodules. Check git install and internet connection.")
+endif()
 
 if (CMAKE_SYSTEM_NAME STREQUAL "Android")
     if ((CMAKE_ANDROID_ARCH STREQUAL "arm") OR (CMAKE_ANDROID_ARCH STREQUAL "x86"))
@@ -28,7 +36,7 @@ else()
 endif()
 
 if ((CMAKE_SYSTEM_NAME STREQUAL "Linux") OR (CMAKE_SYSTEM_NAME STREQUAL "Windows") OR (CMAKE_SYSTEM_NAME STREQUAL "Darwin"))
-    set(DESKTOP TRUE)
+    set(ENGINE_DESKTOP TRUE)
     add_subdirectory(lib/Glad)
 endif()
 add_subdirectory(lib/upng)
@@ -36,4 +44,5 @@ add_subdirectory(lib/upng)
 if (NOT MSVC)
     set(CMAKE_CXX_FLAGS "-Wall")
 endif()
+
 add_subdirectory(src)

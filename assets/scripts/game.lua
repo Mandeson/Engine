@@ -1,5 +1,0 @@
-game = {
-    init = function()
-        
-    end
-}
