@@ -44,19 +44,24 @@ void ScriptManager::loadMainScript() {
 }
 
 void ScriptManager::initApiCall() {
-    getGameMethod("init");
-    if (lua_pcall(L_, 0, 0, 0) != LUA_OK) {
-        std::string error(lua_tostring(L_, -1));
-        lua_pop(L_, lua_gettop(L_));
-        throw ScriptError(std::move(error));
-    }
+    if (!getCallback("init"))
+        return;
+    if (lua_pcall(L_, 0, 0, 0) != LUA_OK)
+        throwLuaError();
 }
 
-void ScriptManager::getGameMethod(const char *name) {
-    lua_getglobal(L_, "game");
-    if (lua_isnil(L_, -1))
-        throw WrapperError("Global game table not found");
+bool ScriptManager::getCallback(const char *name) {
+    lua_getglobal(L_, "Engine");
     lua_getfield(L_, -1, name);
-    if (lua_isnil(L_, -1))
-        throw WrapperError(std::format("Method game.{} not found", name));
+    if (lua_isnil(L_, -1)) {
+        lua_pop(L_, lua_gettop(L_));
+        return false;
+    }
+    return true;
+}
+
+void ScriptManager::throwLuaError() {
+    std::string error(lua_tostring(L_, -1));
+    lua_pop(L_, lua_gettop(L_));
+    throw ScriptError(std::move(error));
 }

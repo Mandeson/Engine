@@ -39,7 +39,8 @@ public:
 
     void initApiCall();
 private:
-    void getGameMethod(const char *name);
+    bool getCallback(const char *name);
+    void throwLuaError();
     void doFileImpl(const std::string &filename); // implemented in ../platform/...
 
     lua_State *L_;
