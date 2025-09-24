@@ -158,17 +158,18 @@ int main() {
 				glfwSetFramebufferSizeCallback(window, framebuffer_size_callback);
 				glfwSetKeyCallback(window, key_callback);
 
-				bool first = true;
-				double last_time = glfwGetTime();
+				std::optional<std::chrono::high_resolution_clock::time_point> last_time;
 				while(!glfwWindowShouldClose(window)) {
-					if (!first) {
-						double new_time = glfwGetTime();
-						double delta = new_time - last_time;
+					if (!last_time.has_value()) {
+						last_time = std::chrono::high_resolution_clock::now();
+					} else {
+						auto new_time = std::chrono::high_resolution_clock::now();;
+						auto duration = new_time - *last_time;
+						double delta = std::chrono::duration<double>(duration).count();
 						last_time = new_time;
 
 						game->timeStep(delta);
 					}
-					first = false;
 					game->render();
 
 					glfwSwapBuffers(window);
