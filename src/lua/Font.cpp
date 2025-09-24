@@ -9,7 +9,6 @@ struct FontLua {
 };
 
 void Lua::Font::registerLua(lua_State *L) {
-    lua_getglobal(L, "Engine");
     luaL_newmetatable(L, kLuaStaticMetaTable);
     const struct luaL_Reg funcs[] = {
         {"load", loadS},
@@ -20,7 +19,6 @@ void Lua::Font::registerLua(lua_State *L) {
     lua_pushvalue(L, -1);
     lua_setfield(L, -2, "__index");
     lua_setfield(L, -2, "Font");
-    lua_pop(L, 1);
 }
 
 int Lua::Font::loadS(lua_State *L) noexcept {

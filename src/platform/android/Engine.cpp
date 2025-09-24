@@ -62,7 +62,29 @@ void EngineImpl::handleCmd(int32_t cmd) {
 }
 
 void EngineImpl::readInput() {
+    android_app_clear_motion_events(app_->inputBuffers);
 
+    static const std::unordered_map<int32_t, const char *> kKeys = {
+            {AKEYCODE_W, "w"},
+            {AKEYCODE_S, "s"},
+            {AKEYCODE_A, "a"},
+            {AKEYCODE_D, "d"},
+            {AKEYCODE_DPAD_UP, "up"},
+            {AKEYCODE_DPAD_DOWN, "down"},
+            {AKEYCODE_DPAD_LEFT, "left"},
+            {AKEYCODE_DPAD_RIGHT, "right"},
+    };
+    auto input_buffers = app_->inputBuffers;
+    for (size_t i = 0; i < input_buffers->keyEventsCount; i++) {
+        const GameActivityKeyEvent &event = input_buffers->keyEvents[i];
+        if (kKeys.contains(event.keyCode)) {
+            if (event.action == AKEY_EVENT_ACTION_DOWN)
+                game_->keyEvent(kKeys.at(event.keyCode), Game::KeyState::kPress);
+            else if (event.action == AKEY_EVENT_ACTION_UP)
+                game_->keyEvent(kKeys.at(event.keyCode), Game::KeyState::kRelease);
+        }
+    }
+    android_app_clear_key_events(app_->inputBuffers);
 }
 
 void EngineImpl::render() {

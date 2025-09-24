@@ -58,7 +58,20 @@ void Game::render() {
 }
 
 void Game::timeStep(double time) {
+    
+}
 
+void Game::keyEvent(const std::string &key, KeyState state) {
+    if (error_)
+        return;
+
+    if (state == Game::KeyState::kPress) {
+        core_->keyPressed(key);
+        script_manager_.keyPressedApiCall(key);
+    } else {
+        core_->keyReleased(key);
+        script_manager_.keyReleasedApiCall(key);
+    }
 }
 
 ThreadPool &Game::getThreadPool() {

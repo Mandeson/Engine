@@ -136,9 +136,6 @@ int main() {
 			glClear(GL_COLOR_BUFFER_BIT);
 			glfwSwapBuffers(window);
 			glfwPollEvents();
-
-			glfwSetFramebufferSizeCallback(window, framebuffer_size_callback);
-			glfwSetKeyCallback(window, key_callback);
 #ifdef __linux__
 			int random_seed;
 			int *seed_ptr = (int *)getauxval(AT_RANDOM);
@@ -156,8 +153,11 @@ int main() {
 			std::shared_ptr<Game> game;
 			try {
 				game = std::make_shared<Game>(window_size, monitor_size.y, ui_scale, random_seed);
-
 				g_game = game;
+
+				glfwSetFramebufferSizeCallback(window, framebuffer_size_callback);
+				glfwSetKeyCallback(window, key_callback);
+
 				bool first = true;
 				double last_time = glfwGetTime();
 				while(!glfwWindowShouldClose(window)) {
@@ -205,7 +205,7 @@ bool OpenGL::isGLES() {
 }
 
 void framebuffer_size_callback(GLFWwindow *window, int width, int height) {
-	auto game = g_game.lock();
+	auto game = EngineContext::game();
 	game->windowSize({width, height});
 #ifdef WIN32
 	game->render();
@@ -215,8 +215,19 @@ void framebuffer_size_callback(GLFWwindow *window, int width, int height) {
 }
 
 void key_callback(GLFWwindow* window, int key, int scancode, int action, int mods) {
-	if (action == GLFW_PRESS) {
-		if (key == GLFW_KEY_F11) {
+	static const std::unordered_map<int, const char *> kKeys = {
+		{GLFW_KEY_W, "w"},
+		{GLFW_KEY_S, "s"},
+		{GLFW_KEY_A, "a"},
+		{GLFW_KEY_D, "d"},
+		{GLFW_KEY_UP, "up"},
+		{GLFW_KEY_DOWN, "down"},
+		{GLFW_KEY_LEFT, "left"},
+		{GLFW_KEY_RIGHT, "right"},
+	};
+
+	if (key == GLFW_KEY_F11) {
+		if (action == GLFW_PRESS) {
 			static bool fullscreen = false;
 			static int prev_width, prev_height;
 			static int pos_x, pos_y;
@@ -242,5 +253,11 @@ void key_callback(GLFWwindow* window, int key, int scancode, int action, int mod
 		} else {
 			// TODO: Game key press
 		}
+	} else if (kKeys.contains(key)) {
+		auto game = EngineContext::game();
+		if (action == GLFW_PRESS)
+			game->keyEvent(std::string(kKeys.at(key)), Game::KeyState::kPress);
+		else if (action == GLFW_RELEASE)
+			game->keyEvent(std::string(kKeys.at(key)), Game::KeyState::kRelease);
 	}
 }

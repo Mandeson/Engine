@@ -12,11 +12,17 @@
 
 class Game {
 public:
+    enum class KeyState {
+        kPress,
+        kRelease
+    };
+
     Game(Vector2i window_size, int monitor_height, float ui_scale, int random_seed);
     ~Game();
     void windowSize(Vector2i size);
     void render();
     void timeStep(double time);
+    void keyEvent(const std::string &key, KeyState state);
     ThreadPool &getThreadPool();
     Font &getDefaultFont();
 private:

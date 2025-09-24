@@ -14,9 +14,11 @@ void ScriptManager::doFileImpl(const std::string &filename) {
         throw FileNotFoundError(filename);
     }
     AAsset_close(asset);
+    int top = lua_gettop(L_);
+    checkStack(top);
     if (luaL_dostring(L_, &str[0]) != LUA_OK) {
         std::string error(lua_tostring(L_, -1));
-        lua_pop(L_, lua_gettop(L_));
+        lua_settop(L_, top);
         throw ScriptError(std::move(error));
     }
 }

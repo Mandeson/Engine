@@ -38,7 +38,11 @@ public:
     void loadMainScript();
 
     void initApiCall();
+    void keyPressedApiCall(const std::string &key);
+    void keyReleasedApiCall(const std::string &key);
 private:
+    void checkStack(int &top);
+    bool getCallback(const char *module, const char *name);
     bool getCallback(const char *name);
     void throwLuaError();
     void doFileImpl(const std::string &filename); // implemented in ../platform/...
