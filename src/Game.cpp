@@ -58,7 +58,10 @@ void Game::render() {
 }
 
 void Game::timeStep(double time) {
+    if (error_)
+        return;
     
+    script_manager_.timeStepApiCall(time);
 }
 
 void Game::keyEvent(const std::string &key, KeyState state) {

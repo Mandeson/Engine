@@ -38,6 +38,7 @@ public:
     void loadMainScript();
 
     void initApiCall();
+    void timeStepApiCall(double time);
     void keyPressedApiCall(const std::string &key);
     void keyReleasedApiCall(const std::string &key);
 private:

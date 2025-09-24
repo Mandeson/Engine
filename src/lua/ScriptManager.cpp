@@ -54,6 +54,14 @@ void ScriptManager::initApiCall() {
         throwLuaError();
 }
 
+void ScriptManager::timeStepApiCall(double time) {
+    if (!getCallback("timeStep"))
+        return;
+    lua_pushnumber(L_, time);
+    if (lua_pcall(L_, 1, 0, 0) != LUA_OK)
+        throwLuaError();
+}
+
 void ScriptManager::keyPressedApiCall(const std::string &key) {
     if (!getCallback("Keyboard", "keyPressed"))
         return;
