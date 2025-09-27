@@ -25,6 +25,7 @@ public:
     void keyEvent(const std::string &key, KeyState state);
     ThreadPool &getThreadPool();
     Font &getDefaultFont();
+    WorldRenderer &getWorldRenderer();
 private:
     void buildErrorMessage(const char *message = nullptr);
 

@@ -21,7 +21,6 @@ MapRenderer::MapRenderer(Vector2i window_size) : shader_("map") {
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
-    windowSize(window_size);
 }
 
 MapRenderer::~MapRenderer() {
@@ -29,11 +28,13 @@ MapRenderer::~MapRenderer() {
     OpenGL::glDeleteFramebuffersPtr(1, &FBO_);
 }
 
-void MapRenderer::windowSize(Vector2i size) {
+void MapRenderer::build(Vector2i size, int pixel_scale) {
     window_size_ = size;
-    pixel_scale_ = 4.0f;
-    framebuffer_size_ = Vector2{static_cast<int>(ceilf(size.x / pixel_scale_ + 1.0f)),
-            static_cast<int>(ceilf(size.y / pixel_scale_ + 1.0f))};
+    float pixel_scale_f = static_cast<float>(pixel_scale);
+    framebuffer_size_ = Vector2{static_cast<int>(ceilf(size.x / pixel_scale_f + 1.0f)),
+            static_cast<int>(ceilf(size.y / pixel_scale_f + 1.0f))};
+
+    //Log::info("{} {}", framebuffer_size_.x, framebuffer_size_.y);
 
     glBindTexture(GL_TEXTURE_2D, framebuffer_texture_id_);
     glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB, framebuffer_size_.x, framebuffer_size_.y,

@@ -13,7 +13,7 @@ public:
     };
     MapRenderer(Vector2i window_size);
     ~MapRenderer();
-    void windowSize(Vector2i size);
+    void build(Vector2i size, int pixel_scale);
     void renderFramebuffer(Map &map, Vector2f camera_pos);
     FramebufferTexture getFramebufferTexture();
 private:
@@ -29,7 +29,6 @@ private:
     GLuint FBO_;
     GLuint framebuffer_texture_id_;
     TextureBufferBuilder screen_buffer_;
-    float pixel_scale_;
 
     friend class WorldRenderer;
 };

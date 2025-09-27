@@ -1,6 +1,7 @@
 #include "ScriptManager.hpp"
 #include <format>
 #include "Font.hpp"
+#include "Sprite.hpp"
 #include "World.hpp"
 #include "Keyboard.hpp"
 #include "../util/Logger.hpp"
@@ -35,6 +36,7 @@ ScriptManager::ScriptManager() {
     Lua::Font::registerLua(L_);
     Lua::World::registerLua(L_);
     Lua::Keyboard::registerLua(L_);
+    Lua::Sprite::registerLua(L_);
 
     luaL_openlibs(L_);
 }

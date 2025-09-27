@@ -1,14 +1,18 @@
 #pragma once
 
 #include "MapRenderer.hpp"
+#include "../Sprite.hpp"
+
 class WorldRenderer {
 public:
     WorldRenderer(Vector2i window_size);
     void windowSize(Vector2i size);
-    void render(Map &map, Vector2f camera_pos);
+    void renderMap(Map &map, Vector2d camera_pos);
+    void renderSprite(Sprite &sprite, Vector2d camera_pos);
+    int getPixelScale();
 private:
-    void setWindowSize(Vector2i size);
-
+    int pixel_scale_ = 1;
+    Vector2i window_size_;
     MapRenderer map_renderer_;
     Shader shader_;
     GLuint a_pos_location_;

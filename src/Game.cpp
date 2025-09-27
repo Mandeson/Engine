@@ -58,10 +58,15 @@ void Game::render() {
 }
 
 void Game::timeStep(double time) {
-    if (error_)
+    if (error_ || !core_->ready())
         return;
-    
-    script_manager_.timeStepApiCall(time);
+
+    try {
+        script_manager_.timeStepApiCall(time);
+    } catch (std::exception &e) {
+        error_ = true;
+        buildErrorMessage(e.what());
+    }
 }
 
 void Game::keyEvent(const std::string &key, KeyState state) {
@@ -83,6 +88,10 @@ ThreadPool &Game::getThreadPool() {
 
 Font &Game::getDefaultFont() {
     return font_;
+}
+
+WorldRenderer &Game::getWorldRenderer() {
+    return world_renderer_.value();
 }
 
 std::shared_ptr<Core> EngineContext::core() {
