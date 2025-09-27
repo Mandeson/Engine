@@ -3,7 +3,6 @@
 #include "OpenGL.hpp"
 #include "util/Logger.hpp"
 #include <array>
-#include <atomic>
 #include <cassert>
 #include <vector>
 
@@ -11,8 +10,6 @@ template<typename V> // Vertex type
 class BufferBuilder {
 public:
     BufferBuilder() = default;
-    BufferBuilder(const BufferBuilder &) = delete;
-    BufferBuilder& operator=(const BufferBuilder&) = delete;
 
     virtual ~BufferBuilder() {
         if (generated_) {
@@ -45,7 +42,7 @@ protected:
     }
     // Call from render thread
     bool bind(GLenum usage = GL_DYNAMIC_DRAW) {
-        if (dirty_) { // Dirty is never true when another thread uses the class
+        if (dirty_) {
             if (indice_index_ == 0) { // buffer empty
                 render_ready_ = false;
                 dirty_ = false;
@@ -93,7 +90,7 @@ private:
     };
 
     bool generated_ = false;
-    std::atomic<bool> dirty_ = false; // only dirty_ can be used by two threads at once
+    bool dirty_ = false;
     bool render_ready_ = false;
     std::vector<V> vertices_;
     std::vector<Triangle> indices_;
