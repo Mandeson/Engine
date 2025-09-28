@@ -1,5 +1,6 @@
 #include "Game.hpp"
 #include <lua.hpp>
+#include "DebugDisplay.hpp"
 #include "EngineContext.hpp"
 #include "OpenGL.hpp"
 #include "util/Logger.hpp"
@@ -8,7 +9,8 @@ std::weak_ptr<Core> g_core;
 
 Game::Game(Vector2i window_size, int monitor_height, float ui_scale, int random_seed)
         : ui_scale_(ui_scale), window_size_(window_size), font_("Roboto-Regular.ttf"),
-        error_text_(thread_pool_, font_, ui_scale * 18.0f), text_renderer_(window_size) {
+        error_text_(thread_pool_, font_, ui_scale * 18.0f), debug_display_(thread_pool_, font_, ui_scale),
+        text_renderer_(window_size) {
     try {
         core_ = std::make_shared<Core>(thread_pool_, window_size);
         g_core = core_;
@@ -47,6 +49,7 @@ void Game::render() {
     if (!error_) {
         try {
             core_->render(*world_renderer_);
+            debug_display_.render(text_renderer_);
         } catch (std::exception &e) {
             error_ = true;
             buildErrorMessage(e.what());
@@ -62,6 +65,7 @@ void Game::timeStep(double time) {
         return;
 
     try {
+        debug_display_.timeStep(time);
         script_manager_.timeStepApiCall(time);
     } catch (std::exception &e) {
         error_ = true;

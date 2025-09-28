@@ -3,6 +3,7 @@
 #include <memory>
 #include <lua.hpp>
 #include "Core.hpp"
+#include "DebugDisplay.hpp"
 #include "ThreadPool.hpp"
 #include "lua/ScriptManager.hpp"
 #include "renderer/TextRenderer.hpp"
@@ -36,6 +37,7 @@ private:
     bool error_ = false;
     Text error_text_;
     std::string error_message_;
+    DebugDisplay debug_display_;
     TextRenderer text_renderer_;
     std::shared_ptr<Core> core_;
     std::optional<WorldRenderer> world_renderer_;
