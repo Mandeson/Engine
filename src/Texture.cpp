@@ -5,6 +5,8 @@
 #include "upng/upng.h"
 #include "util/Logger.hpp"
 
+GLuint Texture::bound_id_ = -1;
+
 Texture::FileNotFoundError::FileNotFoundError(std::string &&filename)
         : message_(std::format("Texture file not found: {}", filename)) { }
 
@@ -78,7 +80,7 @@ void Texture::bind() {
                 reinterpret_cast<void *>(&pixel_buffer_[0]));
         uploaded_ = true;
     } else {
-        glBindTexture(GL_TEXTURE_2D, texture_id_);
+        bind(texture_id_);
     }
 }
 
@@ -108,5 +110,12 @@ void Texture::decode(std::string &&filename, upng_t *upng) {
         size_t buffer_size = size_.x * size_.y * 3 * sizeof(uint8_t);
         pixel_buffer_.resize(buffer_size);
         std::memcpy(&pixel_buffer_[0], reinterpret_cast<const void *>(upng_get_buffer(upng)), buffer_size);
+    }
+}
+
+void Texture::bind(GLuint texture_id) {
+    if (bound_id_ != texture_id) { // Avoid binding it the texture is already bound
+        glBindTexture(GL_TEXTURE_2D, texture_id);
+        bound_id_ = texture_id;
     }
 }

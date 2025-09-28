@@ -59,7 +59,9 @@ void MapRenderer::renderFramebuffer(Map &map, Vector2f camera_pos) {
     OpenGL::glBindFramebufferPtr(GL_FRAMEBUFFER, FBO_);
     glViewport(0, 0, framebuffer_size_.x, framebuffer_size_.y);
     glClear(GL_COLOR_BUFFER_BIT);
-    glDisable(GL_DEPTH_TEST);
+    shader_.use();
+    Shader::setUniform1f(u_tile_size_location_, map.getTileSize());
+    Shader::setUniform2f(u_camera_pos_location_, camera_pos);
     for (auto &layer : map.layers_) {
         for (auto &chunk : layer.chunks) {
             for (size_t tileset_index = 0; tileset_index < chunk.buffers.size(); tileset_index++) {
@@ -69,10 +71,7 @@ void MapRenderer::renderFramebuffer(Map &map, Vector2f camera_pos) {
                     auto &tileset = map.tilesets_[tileset_index];
                     auto &texture = tileset->getTexture();
                     texture.bind();
-                    shader_.use();
                     Shader::setUniform2f(u_texture_size_location_, {1.0f / texture.getSize().x, 1.0f / texture.getSize().y});
-                    Shader::setUniform1f(u_tile_size_location_, tileset->getTileSize());
-                    Shader::setUniform2f(u_camera_pos_location_, camera_pos);
                     buffer->render();
                 }
             }

@@ -34,6 +34,8 @@ public:
     bool ready();
     void bind();
     Vector2i getSize();
+
+    static void bind(GLuint texture_id);
 private:
     void loadImpl(const std::string &filename);
     void decode(std::string &&filename, upng_t *upng);
@@ -49,4 +51,6 @@ private:
     std::vector<uint8_t> pixel_buffer_;
     GLuint texture_id_;
     bool uploaded_ = false;
+
+    static GLuint bound_id_;
 };

@@ -53,6 +53,7 @@ public:
     void use();
     GLuint getAttribLocation(const char* name);
     GLuint getUniformLocation(const char* name);
+    
     static void setUniformMat4(GLuint uniform_location, glm::mat4 matrix);
     static void setUniform1f(GLuint uniform_location, float val);
     static void setUniform2f(GLuint uniform_location, Vector2f vec);
@@ -63,4 +64,6 @@ private:
     static GLuint compile(std::string &&filename, GLenum type);
 
     GLuint id_{};
+
+    static GLuint bound_id_;
 };

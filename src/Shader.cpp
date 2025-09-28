@@ -1,6 +1,8 @@
 #include <format>
 #include "Shader.hpp"
 
+GLuint Shader::bound_id_ = 0;
+
 Shader::FileNotFoundError::FileNotFoundError(std::string &&filename)
         : message_(std::format("Shader file not found: {}", filename)) { }
 
@@ -93,7 +95,10 @@ Shader::~Shader()
 void Shader::use() {
     if (id_ == 0)
         throw Shader::NotLoaded();
-    glUseProgram(id_);
+    if (bound_id_ != id_) {
+        glUseProgram(id_);
+        bound_id_ = id_;
+    }
 }
 
 GLuint Shader::getAttribLocation(const char* name) {
