@@ -2,6 +2,7 @@
 #include <iostream>
 #include "../../EngineContext.hpp"
 #include "../../util/Logger.hpp"
+#include <game-activity/GameActivityEvents.h>
 
 void (*OpenGL::glBindFramebufferPtr)(GLenum, GLuint);
 void (*OpenGL::glDeleteFramebuffersPtr)(GLsizei, const GLuint *);
@@ -62,7 +63,10 @@ void EngineImpl::handleCmd(int32_t cmd) {
 }
 
 void EngineImpl::readInput() {
-    android_app_clear_motion_events(app_->inputBuffers);
+    android_input_buffer *input_buffer = android_app_swap_input_buffers(app_);
+    if (input_buffer == nullptr)
+        return;
+    android_app_clear_motion_events(input_buffer);
 
     static const std::unordered_map<int32_t, const char *> kKeys = {
             {AKEYCODE_W, "w"},
@@ -74,9 +78,8 @@ void EngineImpl::readInput() {
             {AKEYCODE_DPAD_LEFT, "left"},
             {AKEYCODE_DPAD_RIGHT, "right"},
     };
-    auto input_buffers = app_->inputBuffers;
-    for (size_t i = 0; i < input_buffers->keyEventsCount; i++) {
-        const GameActivityKeyEvent &event = input_buffers->keyEvents[i];
+    for (size_t i = 0; i < input_buffer->keyEventsCount; i++) {
+        const GameActivityKeyEvent &event = input_buffer->keyEvents[i];
         if (kKeys.contains(event.keyCode)) {
             if (event.action == AKEY_EVENT_ACTION_DOWN)
                 game_->keyEvent(kKeys.at(event.keyCode), Game::KeyState::kPress);
@@ -84,7 +87,7 @@ void EngineImpl::readInput() {
                 game_->keyEvent(kKeys.at(event.keyCode), Game::KeyState::kRelease);
         }
     }
-    android_app_clear_key_events(app_->inputBuffers);
+    android_app_clear_key_events(input_buffer);
 }
 
 void EngineImpl::render() {
