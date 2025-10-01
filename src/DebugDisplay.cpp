@@ -14,7 +14,7 @@ void DebugDisplay::timeStep(double time) {
 
     if (report_timer_ > kReportDelay) {
         double avg_fps = num_frames_ / report_timer_;
-        text_.setString(std::format("AVG FPS: {:.1f}  Max frame time: {:.4f}", avg_fps, max_frame_time_));
+        text_.setString(std::format("AVG FPS: {:.1f}  Max frame time: {:.1f} ms", avg_fps, max_frame_time_ * 1000));
         num_frames_ = 0;
         max_frame_time_ = 0.0;
         report_timer_ = 0.0;
