@@ -14,7 +14,8 @@ WorldRenderer::WorldRenderer(Vector2i window_size) : map_renderer_(window_size),
 
 void WorldRenderer::windowSize(Vector2i size) {
     window_size_ = size;
-    pixel_scale_ = 4;
+    float pixel_scale_float = std::round(std::min(size.x, size.y) / static_cast<float>(kPixelScaleDivider));
+    pixel_scale_ = std::max(1, static_cast<int>(pixel_scale_float));
     shader_.use();
     Shader::setUniform2f(u_window_size_location_, size);
     map_renderer_.build(size, pixel_scale_);

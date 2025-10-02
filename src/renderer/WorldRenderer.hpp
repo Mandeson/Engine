@@ -21,4 +21,6 @@ private:
     GLuint u_texture_size_location_;
     GLuint u_pos_location_;
     GLuint u_pixel_scale_location_;
+
+    static constexpr int kPixelScaleDivider = 1080 / 6;
 };
