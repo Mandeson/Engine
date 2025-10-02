@@ -34,6 +34,7 @@ public:
     ThreadPool &getThreadPool();
     Font &getDefaultFont();
     WorldRenderer &getWorldRenderer();
+    Vector2i getWindowSize();
 private:
     void buildErrorMessage(const char *message = nullptr);
 

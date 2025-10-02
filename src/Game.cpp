@@ -132,6 +132,10 @@ WorldRenderer &Game::getWorldRenderer() {
     return world_renderer_.value();
 }
 
+Vector2i Game::getWindowSize() {
+    return window_size_;
+}
+
 std::shared_ptr<Core> EngineContext::core() {
     if (g_core.expired())
         throw std::runtime_error("Null pointer detected by EngineContext::core()");
