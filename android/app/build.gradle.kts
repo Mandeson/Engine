@@ -17,11 +17,11 @@ android {
     }
 
     sourceSets {
-            getByName("main") {
-                assets {
-                    srcDirs("../../assets")
-                }
-            }
+        getByName("main") {
+            assets.srcDirs(
+                "../../assets"
+            )
+        }
     }
 
     buildTypes {
@@ -30,13 +30,14 @@ android {
                 jniLibs {
                     useLegacyPackaging = true
                 }
-            }
+            }*/
             externalNativeBuild {
                 cmake {
-                    arguments += "-DANDROID_STL=c++_shared"
-                    arguments += "-DENGINE_MEMORY_SANITIZER=TRUE"
+                    /*arguments += "-DANDROID_STL=c++_shared"
+                    arguments += "-DENGINE_MEMORY_SANITIZER=TRUE"*/
+                    arguments += "-DANDROID_SUPPORT_FLEXIBLE_PAGE_SIZES=ON"
                 }
-            }*/
+            }
         }
         release {
             isMinifyEnabled = false
@@ -50,6 +51,7 @@ android {
                 getDefaultProguardFile("proguard-android-optimize.txt"),
                 "proguard-rules.pro"
             )
+            signingConfig = signingConfigs.getByName("debug")
         }
     }
     compileOptions {
