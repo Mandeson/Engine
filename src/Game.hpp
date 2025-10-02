@@ -17,6 +17,11 @@ public:
         kPress,
         kRelease
     };
+    enum class PointerAction {
+        kDown,
+        kUp,
+        kMove
+    };
 
     Game(Vector2i window_size, int monitor_height, float ui_scale, int random_seed);
     ~Game();
@@ -24,6 +29,8 @@ public:
     void render();
     void timeStep(double time);
     void keyEvent(const std::string &key, KeyState state);
+    void touchEvent(PointerAction action, Vector2f pos, int pointer_id);
+    void touchEventCancel();
     ThreadPool &getThreadPool();
     Font &getDefaultFont();
     WorldRenderer &getWorldRenderer();

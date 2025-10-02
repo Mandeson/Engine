@@ -37,6 +37,8 @@ ScriptManager::ScriptManager() {
     Lua::World::registerLua(L_);
     Lua::Keyboard::registerLua(L_);
     Lua::Sprite::registerLua(L_);
+    lua_newtable(L_);
+    lua_setfield(L_, -2, "Touchscreen");
 
     luaL_openlibs(L_);
 }
@@ -77,6 +79,46 @@ void ScriptManager::keyReleasedApiCall(const std::string &key) {
         return;
     lua_pushstring(L_, key.c_str());
     if (lua_pcall(L_, 1, 0, 0) != LUA_OK)
+        throwLuaError();
+}
+
+void ScriptManager::pointerDownApiCall(Vector2f pos, int pointer_id) {
+    Log::dbg("Down");
+    if (!getCallback("Touchscreen", "pointerDown"))
+        return;
+    lua_pushnumber(L_, pos.x);
+    lua_pushnumber(L_, pos.y);
+    lua_pushinteger(L_, pointer_id);
+    if (lua_pcall(L_, 3, 0, 0) != LUA_OK)
+        throwLuaError();
+}
+
+void ScriptManager::pointerUpApiCall(Vector2f pos, int pointer_id) {
+    Log::dbg("Up");
+    if (!getCallback("Touchscreen", "pointerUp"))
+        return;
+    lua_pushnumber(L_, pos.x);
+    lua_pushnumber(L_, pos.y);
+    lua_pushinteger(L_, pointer_id);
+    if (lua_pcall(L_, 3, 0, 0) != LUA_OK)
+        throwLuaError();
+}
+
+void ScriptManager::pointerMoveApiCall(Vector2f pos, int pointer_id) {
+    if (!getCallback("Touchscreen", "pointerMove"))
+        return;
+    lua_pushnumber(L_, pos.x);
+    lua_pushnumber(L_, pos.y);
+    lua_pushinteger(L_, pointer_id);
+    if (lua_pcall(L_, 3, 0, 0) != LUA_OK)
+        throwLuaError();
+}
+
+void ScriptManager::pointerCancelApiCall() {
+    Log::dbg("Cancel");
+    if (!getCallback("Touchscreen", "pointerCancel"))
+        return;
+    if (lua_pcall(L_, 0, 0, 0) != LUA_OK)
         throwLuaError();
 }
 

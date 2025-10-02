@@ -77,12 +77,46 @@ void Game::keyEvent(const std::string &key, KeyState state) {
     if (error_)
         return;
 
-    if (state == Game::KeyState::kPress) {
-        core_->keyPressed(key);
-        script_manager_.keyPressedApiCall(key);
-    } else {
-        core_->keyReleased(key);
-        script_manager_.keyReleasedApiCall(key);
+    try {
+        if (state == Game::KeyState::kPress) {
+            core_->keyPressed(key);
+            script_manager_.keyPressedApiCall(key);
+        } else {
+            core_->keyReleased(key);
+            script_manager_.keyReleasedApiCall(key);
+        }
+    } catch (std::exception &e) {
+        error_ = true;
+        buildErrorMessage(e.what());
+    }
+}
+
+void Game::touchEvent(Game::PointerAction action, Vector2f pos, int pointer_id) {
+    if (error_)
+        return;
+
+    try {
+        if (action == PointerAction::kDown)
+            script_manager_.pointerDownApiCall(pos, pointer_id);
+        else if (action == PointerAction::kUp)
+            script_manager_.pointerUpApiCall(pos, pointer_id);
+        else
+            script_manager_.pointerMoveApiCall(pos, pointer_id);
+    } catch (std::exception &e) {
+        error_ = true;
+        buildErrorMessage(e.what());
+    }
+}
+
+void Game::touchEventCancel() {
+    if (error_)
+        return;
+
+    try {
+        script_manager_.pointerCancelApiCall();
+    } catch (std::exception &e) {
+        error_ = true;
+        buildErrorMessage(e.what());
     }
 }
 

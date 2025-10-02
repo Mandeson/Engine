@@ -27,14 +27,14 @@ std::shared_ptr<Game> EngineContext::game() {
 }
 
 bool OpenGL::isGLES() {
-	return true;
+    return true;
 }
 
 EngineImpl::EngineImpl(struct android_app *app)
-   : app_(app),
-     display_(EGL_NO_DISPLAY),
-     surface_(EGL_NO_SURFACE),
-     context_(EGL_NO_CONTEXT) { }
+        : app_(app),
+          display_(EGL_NO_DISPLAY),
+          surface_(EGL_NO_SURFACE),
+          context_(EGL_NO_CONTEXT) { }
 
 EngineImpl::~EngineImpl() {
     game_.reset();
@@ -66,6 +66,41 @@ void EngineImpl::readInput() {
     android_input_buffer *input_buffer = android_app_swap_input_buffers(app_);
     if (input_buffer == nullptr)
         return;
+    for (size_t motion_event_index = 0; motion_event_index < input_buffer->motionEventsCount; motion_event_index++) {
+        const GameActivityMotionEvent &event = input_buffer->motionEvents[motion_event_index];
+        if (event.source == AINPUT_SOURCE_TOUCHSCREEN) {
+            int action = event.action & AMOTION_EVENT_ACTION_MASK;
+            if (action == AMOTION_EVENT_ACTION_MOVE) {
+                for (size_t pointer_index = 0; pointer_index < event.pointerCount; pointer_index++) {
+                    int pointer_id = event.pointers[pointer_index].id;
+                    Vector2f pointer_pos = {
+                            GameActivityPointerAxes_getX(&event.pointers[pointer_index]),
+                            GameActivityPointerAxes_getY(&event.pointers[pointer_index])
+                    };
+                    game_->touchEvent(Game::PointerAction::kMove, pointer_pos, pointer_id);
+                    //Log::dbg("move {} {} {}", pointer_id, pointer_pos.x, pointer_pos.y);
+                }
+            } else if (action == AMOTION_EVENT_ACTION_CANCEL) {
+                game_->touchEventCancel();
+            } else {
+                int pointer_index = (event.action & AMOTION_EVENT_ACTION_POINTER_INDEX_MASK) >> AMOTION_EVENT_ACTION_POINTER_INDEX_SHIFT;
+                int pointer_id = event.pointers[pointer_index].id;
+                Vector2f pointer_pos = {
+                        GameActivityPointerAxes_getX(&event.pointers[pointer_index]),
+                        GameActivityPointerAxes_getY(&event.pointers[pointer_index])
+                };
+                if (action == AMOTION_EVENT_ACTION_DOWN ||
+                    action == AMOTION_EVENT_ACTION_POINTER_DOWN) {
+                    //Log::dbg("down {} {} {}", pointer_index, pointer_id, pointer_pos.x, pointer_pos.y);
+                    game_->touchEvent(Game::PointerAction::kDown, pointer_pos, pointer_id);
+                } else if (action == AMOTION_EVENT_ACTION_UP ||
+                           action == AMOTION_EVENT_ACTION_POINTER_UP) {
+                    //Log::dbg("up {} {} {}", pointer_index, pointer_id, pointer_pos.x, pointer_pos.y);
+                    game_->touchEvent(Game::PointerAction::kUp, pointer_pos, pointer_id);
+                }
+            }
+        }
+    }
     android_app_clear_motion_events(input_buffer);
 
     static const std::unordered_map<int32_t, const char *> kKeys = {

@@ -2,6 +2,7 @@
 
 #include <string>
 #include <lua.hpp>
+#include "../util/Vector.hpp"
 
 class ScriptManager {
 public:
@@ -41,6 +42,10 @@ public:
     void timeStepApiCall(double time);
     void keyPressedApiCall(const std::string &key);
     void keyReleasedApiCall(const std::string &key);
+    void pointerDownApiCall(Vector2f pos, int pointer_id);
+    void pointerUpApiCall(Vector2f pos, int pointer_id);
+    void pointerMoveApiCall(Vector2f pos, int pointer_id);
+    void pointerCancelApiCall();
 private:
     void checkStack(int &top);
     bool getCallback(const char *module, const char *name);
