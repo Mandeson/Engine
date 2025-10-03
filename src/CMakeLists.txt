@@ -4,34 +4,60 @@ set(CMAKE_CXX_STANDARD 20)
 set(CMAKE_CXX_STANDARD_REQUIRED True)
 
 if (CMAKE_SYSTEM_NAME STREQUAL "Linux")
-    find_package(Lua REQUIRED)
-    find_package(glm REQUIRED)
-    find_package(Freetype REQUIRED)
-    find_package(nlohmann_json REQUIRED)
+    set(ENGINE_USE_SYSTEM_LUA_LIB_DEFAULT ON)
+    set(ENGINE_USE_SYSTEM_GLM_LIB_DEFAULT ON)
+    set(ENGINE_USE_SYSTEM_FREETYPE_LIB_DEFAULT ON)
+    set(ENGINE_USE_SYSTEM_NLOHMANN_JSON_LIB_DEFAULT ON)
 else()
-    include(FetchContent)
+    set(ENGINE_USE_SYSTEM_LUA_LIB_DEFAULT OFF)
+    set(ENGINE_USE_SYSTEM_GLM_LIB_DEFAULT OFF)
+    set(ENGINE_USE_SYSTEM_FREETYPE_LIB_DEFAULT OFF)
+    set(ENGINE_USE_SYSTEM_NLOHMANN_JSON_LIB_DEFAULT OFF)
+endif()
 
+option(ENGINE_USE_SYSTEM_LUA_LIB "Use system Lua library" ${ENGINE_USE_SYSTEM_LUA_LIB_DEFAULT})
+option(ENGINE_USE_SYSTEM_GLM_LIB "Use system glm library" ${ENGINE_USE_SYSTEM_GLM_LIB_DEFAULT})
+option(ENGINE_USE_SYSTEM_FREETYPE_LIB "Use system Freetype library" ${ENGINE_USE_SYSTEM_FREETYPE_LIB_DEFAULT})
+option(ENGINE_USE_SYSTEM_NLOHMANN_JSON_LIB "Use system nlohmann_json library" ${ENGINE_USE_SYSTEM_NLOHMANN_JSON_LIB_DEFAULT})
+
+include(FetchContent)
+
+if (ENGINE_USE_SYSTEM_LUA_LIB)
+    find_package(Lua REQUIRED)
+else()
     FetchContent_Declare(
         Lua
         GIT_REPOSITORY	https://github.com/walterschell/Lua.git
         GIT_TAG 	3ed55a56eaa05c9221f40b3c07d0e908eb1067b0
     )
     FetchContent_MakeAvailable(Lua)
+endif()
 
+if (ENGINE_USE_SYSTEM_GLM_LIB)
+    find_package(glm REQUIRED)
+else()
     FetchContent_Declare(
         glm
         GIT_REPOSITORY	https://github.com/g-truc/glm.git
         GIT_TAG 	bf71a834948186f4097caa076cd2663c69a10e1e #refs/tags/1.0.1
     )
     FetchContent_MakeAvailable(glm)
+endif()
 
+if (ENGINE_USE_SYSTEM_FREETYPE_LIB)
+    find_package(Freetype REQUIRED)
+else()
     FetchContent_Declare(
         freetype
         GIT_REPOSITORY	https://github.com/freetype/freetype.git
         GIT_TAG 	b04db3872cfac5ee4fd4f895933cebce3576fbf0
     )
     FetchContent_MakeAvailable(freetype)
+endif()
 
+if (ENGINE_USE_SYSTEM_NLOHMANN_JSON_LIB)
+    find_package(nlohmann_json REQUIRED)
+else()
     if(POLICY CMP0135)
         cmake_policy(SET CMP0135 NEW)
         set(CMAKE_POLICY_DEFAULT_CMP0135 NEW)
@@ -48,6 +74,12 @@ set(LIBRARIES upng glm::glm nlohmann_json::nlohmann_json)
 
 if (ENGINE_DESKTOP)
     if (CMAKE_SYSTEM_NAME STREQUAL "Linux")
+        set(ENGINE_USE_SYSTEM_GLFW_LIB_DEFAULT ON)
+    else()
+        set(ENGINE_USE_SYSTEM_GLFW_LIB_DEFAULT OFF)
+    endif()
+    option(ENGINE_USE_SYSTEM_GLFW_LIB "Use system GLFW library" ${ENGINE_USE_SYSTEM_GLFW_LIB_DEFAULT})
+    if (ENGINE_USE_SYSTEM_GLFW_LIB)
         find_package(glfw3 REQUIRED)
     else()
         FetchContent_Declare(
@@ -83,10 +115,15 @@ if (ENGINE_MEMORY_SANITIZER)
     target_link_options(${TARGET} PUBLIC -fsanitize=hwaddress)
 endif()
 
-if (CMAKE_SYSTEM_NAME STREQUAL "Linux")
-    list(APPEND LIBRARIES lua Freetype::Freetype)
+if (ENGINE_USE_SYSTEM_LUA_LIB)
+    list(APPEND LIBRARIES lua)
 else()
-    list(APPEND LIBRARIES lua_static freetype)
+    list(APPEND LIBRARIES lua_static)
+endif()
+if (ENGINE_USE_SYSTEM_FREETYPE_LIB)
+    list(APPEND LIBRARIES Freetype::Freetype)
+else()
+    list(APPEND LIBRARIES freetype)
 endif()
 
 if (CMAKE_SYSTEM_NAME STREQUAL "Android")
