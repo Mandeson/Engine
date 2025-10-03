@@ -31,6 +31,7 @@ endif()
 
 if (MSVC)
     add_compile_options(/EHsc /O2)
+    set(CMAKE_MSVC_RUNTIME_LIBRARY "MultiThreaded")
 else()
     add_compile_options(-fexceptions)
 endif()
