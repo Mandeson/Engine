@@ -55,7 +55,7 @@ void Game::render() {
             buildErrorMessage(e.what());
         }
     } else {
-        text_renderer_.render(error_text_, Vector2{kErrorTextMargin, kErrorTextMargin} * ui_scale_,
+        text_renderer_.render(error_text_, static_cast<Vector2i>(Vector2{kErrorTextMargin, kErrorTextMargin} * ui_scale_),
                 Color{255, 0, 0});
     }
 }

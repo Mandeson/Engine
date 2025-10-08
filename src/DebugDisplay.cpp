@@ -22,5 +22,5 @@ void DebugDisplay::timeStep(double time) {
 }
 
 void DebugDisplay::render(TextRenderer &text_renderer) {
-    text_renderer.render(text_, Vector2f{20 * ui_scale_, 20 * ui_scale_});
+    text_renderer.render(text_, static_cast<Vector2i>(Vector2{20 * ui_scale_, 20 * ui_scale_}));
 }
