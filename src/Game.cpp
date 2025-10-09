@@ -10,14 +10,14 @@ std::weak_ptr<Core> g_core;
 Game::Game(Vector2i window_size, int monitor_height, float ui_scale, int random_seed)
         : ui_scale_(ui_scale), window_size_(window_size), font_("Roboto-Regular.ttf"),
         error_text_(thread_pool_, font_, ui_scale * 18.0f), debug_display_(thread_pool_, font_, ui_scale),
-        text_renderer_(window_size) {
+        text_renderer_(pipeline_state_, window_size) {
     try {
         core_ = std::make_shared<Core>(thread_pool_, window_size);
         g_core = core_;
         script_manager_.loadMainScript();
         script_manager_.initApiCall();
         
-        world_renderer_.emplace(window_size);
+        world_renderer_.emplace(pipeline_state_, window_size);
     } catch (std::exception &e) {
         error_ = true;
         buildErrorMessage(e.what());

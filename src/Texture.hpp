@@ -1,11 +1,12 @@
 #pragma once
 
-#include "ThreadPool.hpp"
 #include <string>
 #include <lua.hpp>
 #include <upng/upng.h>
 #include "OpenGL.hpp"
 #include "util/Vector.hpp"
+#include "PipelineState.hpp"
+#include "ThreadPool.hpp"
 
 class Texture {
 public:
@@ -32,10 +33,8 @@ public:
 
     ~Texture();
     bool ready();
-    void bind();
     Vector2i getSize();
-
-    static void bind(GLuint texture_id);
+    void bind(PipelineState &pipeline_state);
 private:
     void loadImpl(const std::string &filename);
     void decode(std::string &&filename, upng_t *upng);
@@ -51,6 +50,4 @@ private:
     std::vector<uint8_t> pixel_buffer_;
     GLuint texture_id_;
     bool uploaded_ = false;
-
-    static GLuint bound_id_;
 };

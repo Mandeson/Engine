@@ -5,12 +5,13 @@
 
 class WorldRenderer {
 public:
-    WorldRenderer(Vector2i window_size);
+    WorldRenderer(PipelineState &pipeline_state, Vector2i window_size);
     void windowSize(Vector2i size);
     void renderMap(Map &map, Vector2d camera_pos);
     void renderSprite(Sprite &sprite, Vector2d camera_pos);
     int getPixelScale();
 private:
+    PipelineState &pipeline_state_;
     int pixel_scale_ = 1;
     Vector2i window_size_;
     MapRenderer map_renderer_;

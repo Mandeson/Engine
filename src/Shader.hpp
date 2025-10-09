@@ -7,6 +7,7 @@
 #include "OpenGL.hpp"
 #include "util/Vector.hpp"
 #include "util/Color.hpp"
+#include "PipelineState.hpp"
 
 class Shader {
 public:
@@ -50,9 +51,10 @@ public:
     Shader& operator=(const Shader &) = delete;
     ~Shader();
 
-    void use();
     GLuint getAttribLocation(const char* name);
     GLuint getUniformLocation(const char* name);
+
+    void use(PipelineState &pipeline_state);
     
     static void setUniformMat4(GLuint uniform_location, glm::mat4 matrix);
     static void setUniform1f(GLuint uniform_location, float val);
@@ -64,6 +66,4 @@ private:
     static GLuint compile(std::string &&filename, GLenum type);
 
     GLuint id_{};
-
-    static GLuint bound_id_;
 };

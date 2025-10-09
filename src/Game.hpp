@@ -4,6 +4,7 @@
 #include <lua.hpp>
 #include "Core.hpp"
 #include "DebugDisplay.hpp"
+#include "PipelineState.hpp"
 #include "ThreadPool.hpp"
 #include "lua/ScriptManager.hpp"
 #include "renderer/TextRenderer.hpp"
@@ -46,6 +47,7 @@ private:
     Text error_text_;
     std::string error_message_;
     DebugDisplay debug_display_;
+    PipelineState pipeline_state_;
     TextRenderer text_renderer_;
     std::shared_ptr<Core> core_;
     std::optional<WorldRenderer> world_renderer_;

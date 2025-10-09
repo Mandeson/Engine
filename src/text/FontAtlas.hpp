@@ -6,6 +6,7 @@
 #include <vector>
 #include "../OpenGL.hpp"
 #include "../util/Vector.hpp"
+#include "../PipelineState.hpp"
 
 class Font;
 
@@ -33,7 +34,7 @@ public:
     FontAtlas& operator=(const FontAtlas&) = delete;
 
     Glyph &getGlyph(wchar_t codepoint);
-    GLuint getAtlasTextureId(int atlas_index);
+    GLuint getAtlasTextureId(int atlas_index, PipelineState &pipeline_state);
     int getTextureSize();
 private:
     struct Texture {

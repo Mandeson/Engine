@@ -2,7 +2,8 @@
 #include "MapRenderer.hpp"
 #include <cmath>
 
-WorldRenderer::WorldRenderer(Vector2i window_size) : map_renderer_(window_size), shader_("world") {
+WorldRenderer::WorldRenderer(PipelineState &pipeline_state, Vector2i window_size)
+        : pipeline_state_(pipeline_state), map_renderer_(pipeline_state, window_size), shader_("world") {
     a_pos_location_ = shader_.getAttribLocation("aPos");
     a_tex_coord_location_ = shader_.getAttribLocation("aTexCoord");
     u_window_size_location_ = shader_.getUniformLocation("uWindowSize");
@@ -16,7 +17,7 @@ void WorldRenderer::windowSize(Vector2i size) {
     window_size_ = size;
     float pixel_scale_float = std::round(std::min(size.x, size.y) / static_cast<float>(kPixelScaleDivider));
     pixel_scale_ = std::max(1, static_cast<int>(pixel_scale_float));
-    shader_.use();
+    shader_.use(pipeline_state_);
     Shader::setUniform2f(u_window_size_location_, size);
     map_renderer_.build(size, pixel_scale_);
 }
@@ -29,8 +30,8 @@ void WorldRenderer::renderMap(Map &map, Vector2d camera_pos) {
     map_renderer_.renderFramebuffer(map,  camera_pos_integer);
     auto &screen_buffer = map_renderer_.screen_buffer_;
     if (screen_buffer.bind(a_pos_location_, a_tex_coord_location_, GL_STATIC_DRAW)) {
-        map_renderer_.getFramebufferTexture().bind();
-        shader_.use();
+        map_renderer_.getFramebufferTexture().bind(pipeline_state_);
+        shader_.use(pipeline_state_);
         Shader::setUniform2f(u_texture_size_location_, {
             1 / static_cast<float>(map_renderer_.framebuffer_size_.x),
             1 / static_cast<float>(map_renderer_.framebuffer_size_.y)
@@ -45,8 +46,8 @@ void WorldRenderer::renderMap(Map &map, Vector2d camera_pos) {
 
 void WorldRenderer::renderSprite(Sprite &sprite, Vector2d camera_pos) {
     if (sprite.buffer_builder_.bind(a_pos_location_, a_tex_coord_location_, GL_STATIC_DRAW)) {
-        sprite.tileset_.getTexture().bind();
-        shader_.use();
+        sprite.tileset_.getTexture().bind(pipeline_state_);
+        shader_.use(pipeline_state_);
         auto texture_size = sprite.tileset_.getTexture().getSize();
         Shader::setUniform2f(u_texture_size_location_, {
             1 / static_cast<float>(texture_size.x),

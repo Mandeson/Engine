@@ -1,8 +1,6 @@
 #include <format>
 #include "Shader.hpp"
 
-GLuint Shader::bound_id_ = 0;
-
 Shader::FileNotFoundError::FileNotFoundError(std::string &&filename)
         : message_(std::format("Shader file not found: {}", filename)) { }
 
@@ -92,15 +90,6 @@ Shader::~Shader()
         glDeleteProgram(id_);
 }
 
-void Shader::use() {
-    if (id_ == 0)
-        throw Shader::NotLoaded();
-    if (bound_id_ != id_) {
-        glUseProgram(id_);
-        bound_id_ = id_;
-    }
-}
-
 GLuint Shader::getAttribLocation(const char* name) {
     if (id_ == 0)
         throw Shader::NotLoaded();
@@ -111,6 +100,12 @@ GLuint Shader::getUniformLocation(const char *name) {
     if (id_ == 0)
         throw Shader::NotLoaded();
     return glGetUniformLocation(id_, name);
+}
+
+void Shader::use(PipelineState &pipeline_state) {
+    if (id_ == 0)
+        throw Shader::NotLoaded();
+    pipeline_state.useShader(id_);
 }
 
 void Shader::setUniformMat4(GLuint uniform_location, glm::mat4 matrix) {

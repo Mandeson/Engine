@@ -74,7 +74,7 @@ FontAtlas::Glyph &FontAtlas::getGlyph(wchar_t codepoint) {
     }
 }
 
-GLuint FontAtlas::getAtlasTextureId(int texture_index) {
+GLuint FontAtlas::getAtlasTextureId(int texture_index, PipelineState &pipeline_state) {
     std::scoped_lock lock{mutex_};
     for (int i = 0; i < static_cast<int>(textures_.size()) - 1; i++) { // Not the last, actively changed atlas
         auto &texture = textures_[i];
@@ -85,7 +85,7 @@ GLuint FontAtlas::getAtlasTextureId(int texture_index) {
     auto &texture = textures_[texture_index];
     if (!texture.texture_generated_) {
         glGenTextures(1, &texture.texture_id_);
-        glBindTexture(GL_TEXTURE_2D, texture.texture_id_);
+        pipeline_state.bindTexture(texture.texture_id_);
         glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
         glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
         glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
@@ -96,7 +96,7 @@ GLuint FontAtlas::getAtlasTextureId(int texture_index) {
         texture.texture_generated_ = true;
     } else {
         if (texture.dirty_) {
-            glBindTexture(GL_TEXTURE_2D, texture.texture_id_);
+            pipeline_state.bindTexture(texture.texture_id_);
             glTexSubImage2D(GL_TEXTURE_2D, 0, 0, 0, texture_size_,
                     texture_size_, GL_LUMINANCE, GL_UNSIGNED_BYTE,
                     reinterpret_cast<void *>(&texture.atlas_[0]));
