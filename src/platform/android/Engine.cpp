@@ -145,7 +145,10 @@ void EngineImpl::render() {
             surface_height_ = surface_height;
             Vector2i window_size = {surface_width_, surface_height_};
             if (game_ == nullptr) {
-                game_ = std::make_shared<Game>(window_size, surface_height_, 1.0f,
+                int dp_height = AConfiguration_getScreenHeightDp(app_->config);
+                float ui_scale = static_cast<float>(surface_height) / static_cast<float>(dp_height);
+                Log::dbg("<Android> UI scale: {}", ui_scale);
+                game_ = std::make_shared<Game>(window_size, surface_height_, ui_scale,
                                                time(nullptr));
                 g_game = game_;
             } else {
