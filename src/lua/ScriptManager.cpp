@@ -30,7 +30,9 @@ const char *ScriptManager::WrapperError::what() const noexcept {
 
 ScriptManager::ScriptManager() {
     L_ = luaL_newstate();
+    luaL_openlibs(L_);
 
+    registerImpl();
     lua_newtable(L_);
     lua_pushvalue(L_, -1);
     lua_setglobal(L_, "Engine");
@@ -41,8 +43,6 @@ ScriptManager::ScriptManager() {
     Lua::Window::registerLua(L_);
     lua_newtable(L_);
     lua_setfield(L_, -2, "Touchscreen");
-
-    luaL_openlibs(L_);
 }
 
 ScriptManager::~ScriptManager() {

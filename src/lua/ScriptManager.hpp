@@ -36,6 +36,7 @@ public:
     ScriptManager(const ScriptManager &) = delete;
     ScriptManager& operator=(const ScriptManager &) = delete;
 
+    void registerImpl(); // platform-specific function overrides - implemented in ../platform/...
     void loadMainScript();
 
     void initApiCall();
