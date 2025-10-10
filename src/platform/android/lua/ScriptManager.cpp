@@ -1,6 +1,7 @@
 #include "../../../lua/ScriptManager.hpp"
 #include <string>
 #include "../asset_manager.hpp"
+#include "../../../util/Logger.hpp"
 
 static void doFile(lua_State *L, const std::string &filename) {
     auto path = ("scripts/" + filename);
@@ -39,7 +40,23 @@ static int dofileLua(lua_State *L) noexcept {
     return lua_gettop(L) - 1; // Do not return the file name, only the values returned by the script
 }
 
+static int printLua(lua_State *L) noexcept {
+    int arg_cnt = lua_gettop(L);
+    std::string text;
+    for (int i = 1; i <= arg_cnt; i++) {
+        const char *s = lua_tostring(L, i);
+
+        if (i > 1)
+            text += '\t';
+        text += s;
+    }
+    Log::info(text);
+    return 0;
+}
+
 void ScriptManager::registerImpl() {
     lua_pushcfunction(L_, dofileLua);
     lua_setglobal(L_, "dofile");
+    lua_pushcfunction(L_, printLua);
+    lua_setglobal(L_, "print");
 }
