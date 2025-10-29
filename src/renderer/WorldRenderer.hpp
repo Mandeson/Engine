@@ -1,14 +1,14 @@
 #pragma once
 
 #include "MapRenderer.hpp"
-#include "../Sprite.hpp"
+#include "../TilesetSprite.hpp"
 
 class WorldRenderer {
 public:
     WorldRenderer(PipelineState &pipeline_state, Vector2i window_size);
     void windowSize(Vector2i size);
     void renderMap(Map &map, Vector2d camera_pos);
-    void renderSprite(Sprite &sprite, Vector2d camera_pos);
+    void renderTilesetSprite(TilesetSprite &sprite, Vector2d camera_pos);
     int getPixelScale();
 private:
     PipelineState &pipeline_state_;

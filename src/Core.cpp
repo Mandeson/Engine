@@ -1,6 +1,5 @@
 #include "Core.hpp"
-#include "Sprite.hpp"
-#include "SpriteManager.hpp"
+#include "TilesetSprite.hpp"
 #include "util/Vector.hpp"
 #include "world/TilesetManager.hpp"
 #include <stdexcept>
@@ -16,8 +15,8 @@ void Core::render(WorldRenderer &world_renderer) {
     if (map_ && map_->ready()) {
         Vector2d &camera_pos = camera_pos_;
         world_renderer.renderMap(*map_, camera_pos);
-        sprite_manager_.forEachSprite([&world_renderer, &camera_pos] (Sprite &sprite) {
-            world_renderer.renderSprite(sprite, camera_pos);
+        tileset_sprite_manager_.forEachSprite([&world_renderer, &camera_pos] (TilesetSprite &sprite) {
+            world_renderer.renderTilesetSprite(sprite, camera_pos);
         });
     }
 }
@@ -31,7 +30,7 @@ void Core::keyReleased(const std::string &key) {
 }
 
 bool Core::ready() {
-    return (!map_.has_value() || map_->ready()) && sprite_manager_.ready();
+    return (!map_.has_value() || map_->ready()) && tileset_sprite_manager_.ready();
 }
 
 void Core::loadMap(const char *name) {
@@ -54,8 +53,8 @@ TilesetManager &Core::getTilesetManager() {
     return tileset_manager_;
 }
 
-SpriteManager &Core::getSpriteManager() {
-    return sprite_manager_;
+TilesetSpriteManager &Core::getTilesetSpriteManager() {
+    return tileset_sprite_manager_;
 }
 
 Map &Core::getMap() {

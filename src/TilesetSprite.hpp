@@ -4,12 +4,13 @@
 #include "world/Tileset.hpp"
 #include "TextureBufferBuilder.hpp"
 
-class SpriteManager;
+template <typename T, typename I>
+class SpriteManagerBase;
 class WorldRenderer;
 
-class Sprite {
+class TilesetSprite {
 public:
-    Sprite(Tileset &tileset, Vector2<uint16_t> texture_pos, Vector2i size);
+    TilesetSprite(Tileset &tileset, Vector2<uint16_t> texture_pos, Vector2i size);
     bool ready();
 private:
     Tileset &tileset_;
@@ -17,6 +18,8 @@ private:
     TextureBufferBuilder buffer_builder_;
     Vector2d pos_ = {0, 0};
 
-    friend class SpriteManager;
+    template <typename T, typename I>
+    friend class SpriteManagerBase;
+    
     friend class WorldRenderer;
 };

@@ -1,6 +1,6 @@
 #pragma once
 
-#include "SpriteManager.hpp"
+#include "TilesetSpriteManager.hpp"
 #include "ThreadPool.hpp"
 #include "renderer/WorldRenderer.hpp"
 #include "util/Vector.hpp"
@@ -21,13 +21,13 @@ public:
     Vector2d getCameraPos();
     KeyboardController &getKeyboardController();
     TilesetManager &getTilesetManager();
-    SpriteManager &getSpriteManager();
+    TilesetSpriteManager &getTilesetSpriteManager();
     Map &getMap();
 private:
     ThreadPool &thread_pool_;
     KeyboardController keyboard_controller_;
     TilesetManager tileset_manager_;
-    SpriteManager sprite_manager_;
+    TilesetSpriteManager tileset_sprite_manager_;
     std::optional<Map> map_;
     Vector2d camera_pos_;
 };

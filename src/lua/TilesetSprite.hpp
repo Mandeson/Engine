@@ -2,7 +2,7 @@
 
 #include <lua.hpp>
 
-namespace Lua::Sprite {
+namespace Lua::TilesetSprite {
 constexpr const char *kLuaStaticMetaTable = "SpriteStatic";
 constexpr const char *kLuaMetaTable = "Sprite";
 

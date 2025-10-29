@@ -44,7 +44,7 @@ void WorldRenderer::renderMap(Map &map, Vector2d camera_pos) {
     }
 }
 
-void WorldRenderer::renderSprite(Sprite &sprite, Vector2d camera_pos) {
+void WorldRenderer::renderTilesetSprite(TilesetSprite &sprite, Vector2d camera_pos) {
     if (sprite.buffer_builder_.bind(a_pos_location_, a_tex_coord_location_, GL_STATIC_DRAW)) {
         sprite.tileset_.getTexture().bind(pipeline_state_);
         shader_.use(pipeline_state_);
