@@ -6,14 +6,7 @@ void MapRenderer::FramebufferTexture::bind(PipelineState &pipeline_state) {
     pipeline_state.bindTexture(framebuffer_texture_id);
 }
 
-MapRenderer::MapRenderer(PipelineState &pipeline_state, Vector2i window_size)
-        : pipeline_state_(pipeline_state), shader_("map") {
-    a_pos_location_ = shader_.getAttribLocation("aPos");
-    a_tex_coord_location_ = shader_.getAttribLocation("aTexCoord");
-    u_window_size_location_ = shader_.getUniformLocation("uWindowSize");
-    u_texture_size_location_ = shader_.getUniformLocation("uTextureSize");
-    u_camera_pos_location_ = shader_.getUniformLocation("uCameraPos");
-    u_tile_size_location_ = shader_.getUniformLocation("uTileSize");
+MapRenderer::MapRenderer(PipelineState &pipeline_state, Vector2i window_size) : pipeline_state_(pipeline_state) {
     OpenGL::glGenFramebuffersPtr(1, &FBO_);
     OpenGL::glBindFramebufferPtr(GL_FRAMEBUFFER, FBO_);
     glGenTextures(1, &framebuffer_texture_id_);
@@ -51,28 +44,28 @@ void MapRenderer::build(Vector2i size, int pixel_scale) {
     screen_buffer_.clear();
     screen_buffer_.addRectangle({0, 0}, framebuffer_size_, TextureRect{{0, 0},framebuffer_size_ }, false, true);
     screen_buffer_.end();
-
-    shader_.use(pipeline_state_);
-    Shader::setUniform2f(u_window_size_location_, framebuffer_size_);
 }
 
-void MapRenderer::renderFramebuffer(Map &map, Vector2f camera_pos) {
+void MapRenderer::renderFramebuffer(TextureRenderer &texture_renderer, Map &map, Vector2f camera_pos) {
     OpenGL::glBindFramebufferPtr(GL_FRAMEBUFFER, FBO_);
     glViewport(0, 0, framebuffer_size_.x, framebuffer_size_.y);
     glClear(GL_COLOR_BUFFER_BIT);
-    shader_.use(pipeline_state_);
-    Shader::setUniform1f(u_tile_size_location_, map.getTileSize());
-    Shader::setUniform2f(u_camera_pos_location_, camera_pos);
+    texture_renderer.getShader().use(pipeline_state_);
+    auto &locations = texture_renderer.getShaderLocations();
+    Shader::setUniform2f(locations.u_window_size_location_, framebuffer_size_);
+    float tile_size = static_cast<float>(map.getTileSize());
+    Shader::setUniform2f(locations.u_scale_location_, Vector2{tile_size, tile_size});
+    Shader::setUniform2f(locations.u_pos_location_, -camera_pos);
     for (auto &layer : map.layers_) {
         for (auto &chunk : layer.chunks) {
             for (size_t tileset_index = 0; tileset_index < chunk.buffers.size(); tileset_index++) {
                 auto &buffer = chunk.buffers[tileset_index];
                 if (buffer != nullptr) {
-                    buffer->bind(a_pos_location_, a_tex_coord_location_, GL_STATIC_DRAW);
+                    buffer->bind(locations.a_pos_location_, locations.a_tex_coord_location_, GL_STATIC_DRAW);
                     auto &tileset = map.tilesets_[tileset_index];
                     auto &texture = tileset->getTexture();
                     texture.bind(pipeline_state_);
-                    Shader::setUniform2f(u_texture_size_location_, {1.0f / texture.getSize().x, 1.0f / texture.getSize().y});
+                    Shader::setUniform2f(locations.u_texture_size_location_, {1.0f / texture.getSize().x, 1.0f / texture.getSize().y});
                     buffer->render();
                 }
             }

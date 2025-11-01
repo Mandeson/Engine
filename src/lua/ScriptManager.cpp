@@ -1,7 +1,9 @@
 #include "ScriptManager.hpp"
 #include <format>
 #include "Font.hpp"
+#include "Texture.hpp"
 #include "TilesetSprite.hpp"
+#include "Sprite.hpp"
 #include "Window.hpp"
 #include "World.hpp"
 #include "Keyboard.hpp"
@@ -40,7 +42,9 @@ ScriptManager::ScriptManager() {
     Lua::World::registerLua(L_);
     Lua::Keyboard::registerLua(L_);
     Lua::TilesetSprite::registerLua(L_);
+    Lua::Sprite::registerLua(L_);
     Lua::Window::registerLua(L_);
+    Lua::Texture::registerLua(L_);
     lua_newtable(L_);
     lua_setfield(L_, -2, "Touchscreen");
 }

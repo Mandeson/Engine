@@ -6,7 +6,7 @@ Tileset::Tileset(ThreadPool &thread_pool, const std::string &filename) {
     tile_size_ = data.at("tileheight").template get<int>();
     if (data.at("tilewidth").template get<int>() != tile_size_)
         throw std::runtime_error("<Tileset> Non-square tiles are not supported.");
-    texture_.emplace(thread_pool, "map/" + data.at("image").template get<std::string>());
+    texture_.emplace(thread_pool, "map/" + data.at("image").template get<std::string>(), Texture::Filtering::kNearest);
     columns_ = data.at("columns").template get<int>();
 }
 

@@ -1,7 +1,7 @@
 #pragma once
 
 #include "../PipelineState.hpp"
-#include "../Shader.hpp"
+#include "TextureRenderer.hpp"
 #include "../world/Map.hpp"
 
 class WorldRenderer;
@@ -15,17 +15,10 @@ public:
     MapRenderer(PipelineState &pipeline_state, Vector2i window_size);
     ~MapRenderer();
     void build(Vector2i size, int pixel_scale);
-    void renderFramebuffer(Map &map, Vector2f camera_pos);
+    void renderFramebuffer(TextureRenderer &texture_renderer, Map &map, Vector2f camera_pos);
     FramebufferTexture getFramebufferTexture();
 private:
     PipelineState &pipeline_state_;
-    Shader shader_;
-    GLuint a_pos_location_;
-    GLuint a_tex_coord_location_;
-    GLuint u_window_size_location_;
-    GLuint u_texture_size_location_;
-    GLuint u_camera_pos_location_;
-    GLuint u_tile_size_location_;
     Vector2i window_size_;
     Vector2i framebuffer_size_;
     GLuint FBO_;

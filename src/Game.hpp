@@ -8,6 +8,7 @@
 #include "ThreadPool.hpp"
 #include "lua/ScriptManager.hpp"
 #include "renderer/TextRenderer.hpp"
+#include "renderer/TextureRenderer.hpp"
 #include "renderer/WorldRenderer.hpp"
 #include "text/Font.hpp"
 #include "util/Vector.hpp"
@@ -32,7 +33,6 @@ public:
     void keyEvent(const std::string &key, KeyState state);
     void touchEvent(PointerAction action, Vector2f pos, int pointer_id);
     void touchEventCancel();
-    ThreadPool &getThreadPool();
     Font &getDefaultFont();
     WorldRenderer &getWorldRenderer();
     Vector2i getWindowSize();
@@ -50,6 +50,7 @@ private:
     PipelineState pipeline_state_;
     TextRenderer text_renderer_;
     std::shared_ptr<Core> core_;
+    std::optional<TextureRenderer> texture_renderer_;
     std::optional<WorldRenderer> world_renderer_;
     ScriptManager script_manager_;
 

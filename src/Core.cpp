@@ -1,24 +1,31 @@
 #include "Core.hpp"
-#include "TilesetSprite.hpp"
+#include "sprite/TilesetSprite.hpp"
+#include "sprite/SpriteManager.hpp"
+#include "renderer/SpriteRenderer.hpp"
 #include "util/Vector.hpp"
 #include "world/TilesetManager.hpp"
 #include <stdexcept>
 
 Core::Core(ThreadPool &thread_pool, Vector2i window_size) : thread_pool_(thread_pool),
-        tileset_manager_(thread_pool), camera_pos_{0.0, 0.0} { }
+        window_size_(window_size), tileset_manager_(thread_pool), camera_pos_{0.0, 0.0} { }
 
 void Core::windowSize(Vector2i window_size) {
-    
+    window_size_ = window_size;
 }
 
-void Core::render(WorldRenderer &world_renderer) {
+void Core::render(PipelineState &pipeline_state, TextureRenderer &texture_renderer, WorldRenderer &world_renderer) {
     if (map_ && map_->ready()) {
         Vector2d &camera_pos = camera_pos_;
-        world_renderer.renderMap(*map_, camera_pos);
+        world_renderer.renderMap(texture_renderer, *map_, camera_pos);
         tileset_sprite_manager_.forEachSprite([&world_renderer, &camera_pos] (TilesetSprite &sprite) {
             world_renderer.renderTilesetSprite(sprite, camera_pos);
         });
     }
+
+    sprite_manager_.forEachSprite([&pipeline_state, &texture_renderer, this] (Sprite &sprite) {
+        if (sprite.ready())
+            SpriteRenderer::render(texture_renderer, pipeline_state, window_size_, sprite);
+    });
 }
 
 void Core::keyPressed(const std::string &key) {
@@ -57,8 +64,17 @@ TilesetSpriteManager &Core::getTilesetSpriteManager() {
     return tileset_sprite_manager_;
 }
 
+SpriteManager &Core::getSpriteManager() {
+    return sprite_manager_;
+}
+
 Map &Core::getMap() {
     if (!map_.has_value())
         throw std::runtime_error("Attempted to get the map which has not been loaded");
     return *map_;
+}
+
+
+ThreadPool &Core::getThreadPool() {
+    return thread_pool_;
 }

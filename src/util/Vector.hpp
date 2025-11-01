@@ -23,6 +23,10 @@ struct Vector2 {
         return Vector2<T>{static_cast<T>(x - other.x), static_cast<T>(y - other.y)};
     }
 
+    Vector2<T> operator-() const {
+        return Vector2<T>{-x, -y};
+    }
+
     template <typename S>
     operator Vector2<S>() const {
         return Vector2<S>{static_cast<S>(x), static_cast<S>(y)};

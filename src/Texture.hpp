@@ -1,5 +1,6 @@
 #pragma once
 
+#include <cstdint>
 #include <string>
 #include <lua.hpp>
 #include <upng/upng.h>
@@ -10,6 +11,12 @@
 
 class Texture {
 public:
+    enum class Filtering {
+        kMipmapLinear,
+        kLinear,
+        kNearest,
+    };
+
     class FileNotFoundError : public std::exception {
     public:
         FileNotFoundError(std::string &&filename);
@@ -26,7 +33,7 @@ public:
         std::string message_;
     };
 
-    Texture(ThreadPool &thread_pool, const std::string &filename);
+    Texture(ThreadPool &thread_pool, const std::string &filename, Filtering filtering = Filtering::kMipmapLinear);
 
     Texture(const Texture &) = delete;
     Texture& operator=(const Texture &) = delete;
@@ -39,13 +46,14 @@ private:
     void loadImpl(const std::string &filename);
     void decode(std::string &&filename, upng_t *upng);
 
+    Filtering filtering_;
     bool background_work_active_;
     std::mutex mutex_;
     std::condition_variable background_work_condition_;
     std::atomic<bool> error_ = false;
     std::exception_ptr exception_ = nullptr;
     std::atomic<bool> ready_ = false;
-    bool alpha_;
+    bool alpha_ = false;
     Vector2i size_;
     std::vector<uint8_t> pixel_buffer_;
     GLuint texture_id_;

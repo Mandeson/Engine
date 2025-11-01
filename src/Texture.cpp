@@ -19,8 +19,8 @@ const char* Texture::DecodingError::what() const noexcept {
     return message_.c_str();
 }
 
-Texture::Texture(ThreadPool &thread_pool, const std::string &filename)
-        : background_work_active_(true) {
+Texture::Texture(ThreadPool &thread_pool, const std::string &filename, Filtering filtering)
+        : filtering_(filtering), background_work_active_(true) {
     thread_pool.execute([this, filename] {
         Log::dbg("Loading texture {}", filename);
         try {
@@ -72,14 +72,37 @@ void Texture::bind(PipelineState &pipeline_state) {
     if (!uploaded_) {
         glGenTextures(1, &texture_id_);
         pipeline_state.bindTexture(texture_id_);
-        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
-        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
+        GLint min_filter;
+        if (filtering_ == Filtering::kMipmapLinear)
+            min_filter = GL_LINEAR_MIPMAP_LINEAR;
+        else if (filtering_ == Filtering::kLinear)
+            min_filter = GL_LINEAR;
+        else 
+            min_filter = GL_NEAREST;
+        GLint mag_filter;
+        if (filtering_ == Filtering::kNearest)
+            mag_filter = GL_NEAREST;
+        else
+            mag_filter = GL_LINEAR;
+
+        if (filtering_ == Filtering::kMipmapLinear && !OpenGL::isGLES()) {
+            // This parameter is OpenGL compatibility only, cannot be used in GLES
+            glTexParameteri(GL_TEXTURE_2D, GL_GENERATE_MIPMAP, GL_TRUE);
+        }
+        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, mag_filter);
+        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, min_filter);
         glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
         glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
-        GLuint format = alpha_ ? GL_RGBA : GL_RGB;
+
+        GLenum format = alpha_ ? GL_RGBA : GL_RGB;
         glTexImage2D(GL_TEXTURE_2D, 0, format, size_.x,
                 size_.y, 0, format, GL_UNSIGNED_BYTE,
                 reinterpret_cast<void *>(&pixel_buffer_[0]));
+        
+        if (filtering_ == Filtering::kMipmapLinear && OpenGL::isGLES()) {
+            // In OpenGL 2.1 glGenerateMipmap in not supported, so use it only in GLES
+            glGenerateMipmap(GL_TEXTURE_2D);
+        }
         uploaded_ = true;
     } else {
         pipeline_state.bindTexture(texture_id_);

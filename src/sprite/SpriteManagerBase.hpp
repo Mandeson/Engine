@@ -1,6 +1,5 @@
 #pragma once
 
-#include "util/Vector.hpp"
 #include <functional>
 #include <optional>
 #include <vector>
@@ -26,19 +25,6 @@ public:
         for (auto &sprite : sprites_)
             if (sprite.has_value())
                 func(*sprite);
-    }
-
-    void setPos(I sprite_id, Vector2d pos) {
-        sprites_.at(sprite_id)->pos_ = pos;
-    }
-
-    Vector2d getPos(I sprite_id) {
-        return sprites_.at(sprite_id)->pos_;
-    }
-
-    void move(I sprite_id, Vector2d move) {
-        auto &pos = sprites_.at(sprite_id)->pos_;
-        pos = pos + move;
     }
 protected:
     I findEmptyOrCreate() {

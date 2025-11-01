@@ -18,6 +18,7 @@ Game::Game(Vector2i window_size, int monitor_height, float ui_scale, int random_
         script_manager_.initApiCall();
         
         world_renderer_.emplace(pipeline_state_, window_size);
+        texture_renderer_.emplace();
     } catch (std::exception &e) {
         error_ = true;
         buildErrorMessage(e.what());
@@ -48,7 +49,7 @@ void Game::render() {
     glBlendFunc(GL_ONE, GL_ONE_MINUS_SRC_ALPHA);
     if (!error_) {
         try {
-            core_->render(*world_renderer_);
+            core_->render(pipeline_state_, *texture_renderer_, *world_renderer_);
             debug_display_.render(text_renderer_);
         } catch (std::exception &e) {
             error_ = true;
@@ -118,10 +119,6 @@ void Game::touchEventCancel() {
         error_ = true;
         buildErrorMessage(e.what());
     }
-}
-
-ThreadPool &Game::getThreadPool() {
-    return thread_pool_;
 }
 
 Font &Game::getDefaultFont() {
