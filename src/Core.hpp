@@ -28,6 +28,7 @@ public:
     SpriteManager &getSpriteManager();
     Map &getMap();
     ThreadPool &getThreadPool();
+    Vector2i getWindowSize();
 private:
     ThreadPool &thread_pool_;
     Vector2i window_size_;

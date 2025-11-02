@@ -27,7 +27,6 @@ public:
     void mouseButtonEvent(Input::Mouse::Button button, Input::Mouse::ButtonState button_state, Vector2d position);
     Font &getDefaultFont();
     WorldRenderer &getWorldRenderer();
-    Vector2i getWindowSize();
 private:
     void buildErrorMessage(const char *message = nullptr);
 

@@ -78,3 +78,7 @@ Map &Core::getMap() {
 ThreadPool &Core::getThreadPool() {
     return thread_pool_;
 }
+
+Vector2i Core::getWindowSize() {
+    return window_size_;
+}

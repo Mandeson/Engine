@@ -15,7 +15,7 @@ void Lua::Window::registerLua(lua_State *L) {
 }
 
 int Lua::Window::getSizeS(lua_State *L) noexcept {
-    auto window_size = EngineContext::game()->getWindowSize();
+    auto window_size = EngineContext::core()->getWindowSize();
     lua_pushinteger(L, window_size.x);
     lua_pushinteger(L, window_size.y);
     return 2;
