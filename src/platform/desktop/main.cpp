@@ -26,9 +26,12 @@ void (*OpenGL::glFramebufferTexture2DPtr)(GLenum, GLenum, GLenum, GLuint, GLint)
 
 std::weak_ptr<Game> g_game;
 bool g_is_gles = false;
+Vector2f cursor_pos;
 
 void framebuffer_size_callback(GLFWwindow *window, int width, int height);
 void key_callback(GLFWwindow* window, int key, int scancode, int action, int mods);
+void cursor_position_callback(GLFWwindow* window, double xpos, double ypos);
+void mouse_button_callback(GLFWwindow* window, int button, int action, int mods);
 
 static void setupGLES() {
 	glfwWindowHint(GLFW_CLIENT_API, GLFW_OPENGL_ES_API);
@@ -157,6 +160,8 @@ int main() {
 
 				glfwSetFramebufferSizeCallback(window, framebuffer_size_callback);
 				glfwSetKeyCallback(window, key_callback);
+				glfwSetCursorPosCallback(window, cursor_position_callback);
+				glfwSetMouseButtonCallback(window, mouse_button_callback);
 
 				std::optional<std::chrono::high_resolution_clock::time_point> last_time;
 				while(!glfwWindowShouldClose(window)) {
@@ -257,8 +262,29 @@ void key_callback(GLFWwindow* window, int key, int scancode, int action, int mod
 	} else if (kKeys.contains(key)) {
 		auto game = EngineContext::game();
 		if (action == GLFW_PRESS)
-			game->keyEvent(std::string(kKeys.at(key)), Game::KeyState::kPress);
+			game->keyEvent(kKeys.at(key), Input::KeyState::kPress);
 		else if (action == GLFW_RELEASE)
-			game->keyEvent(std::string(kKeys.at(key)), Game::KeyState::kRelease);
+			game->keyEvent(kKeys.at(key), Input::KeyState::kRelease);
 	}
+}
+
+void cursor_position_callback(GLFWwindow*, double xpos, double ypos) {
+	cursor_pos = Vector2{xpos, ypos};
+}
+
+void mouse_button_callback(GLFWwindow*, int button, int action, int) {
+	Input::Mouse::ButtonState button_state;
+	if (action == GLFW_PRESS)
+		button_state = Input::Mouse::ButtonState::kPress;
+	else
+		button_state = Input::Mouse::ButtonState::kRelease;
+
+	auto game = EngineContext::game();
+
+	if (button == GLFW_MOUSE_BUTTON_LEFT)
+		game->mouseButtonEvent(Input::Mouse::Button::kLeft, button_state, cursor_pos);
+	else if (button == GLFW_MOUSE_BUTTON_RIGHT)
+		game->mouseButtonEvent(Input::Mouse::Button::kRight, button_state, cursor_pos);
+	else if (button == GLFW_MOUSE_BUTTON_MIDDLE)
+	 	game->mouseButtonEvent(Input::Mouse::Button::kMiddle, button_state, cursor_pos);
 }

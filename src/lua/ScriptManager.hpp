@@ -47,12 +47,19 @@ public:
     void pointerUpApiCall(Vector2f pos, int pointer_id);
     void pointerMoveApiCall(Vector2f pos, int pointer_id);
     void pointerCancelApiCall();
+    void mouseButtonPressedApiCall(const char *button, Vector2d pos);
+    void mouseButtonReleasedApiCall(const char *button, Vector2d pos);
 private:
     void checkStack(int &top);
     bool getCallback(const char *module, const char *name);
     bool getCallback(const char *name);
     void throwLuaError();
+    void registerEmptyTable(const char *name);
     void doFileImpl(const std::string &filename); // implemented in ../platform/...
+
+    static constexpr const char *kEngineTableName = "Engine";
+    static constexpr const char *kTouchscreenModuleName = "Touchscreen";
+    static constexpr const char *kMouseModuleName = "Mouse";
 
     lua_State *L_;
 };

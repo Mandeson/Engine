@@ -2,6 +2,7 @@
 #include <lua.hpp>
 #include "DebugDisplay.hpp"
 #include "EngineContext.hpp"
+#include "Input.hpp"
 #include "OpenGL.hpp"
 #include "util/Logger.hpp"
 
@@ -74,12 +75,12 @@ void Game::timeStep(double time) {
     }
 }
 
-void Game::keyEvent(const std::string &key, KeyState state) {
+void Game::keyEvent(const std::string &key, Input::KeyState state) {
     if (error_)
         return;
 
     try {
-        if (state == Game::KeyState::kPress) {
+        if (state == Input::KeyState::kPress) {
             core_->keyPressed(key);
             script_manager_.keyPressedApiCall(key);
         } else {
@@ -92,14 +93,14 @@ void Game::keyEvent(const std::string &key, KeyState state) {
     }
 }
 
-void Game::touchEvent(Game::PointerAction action, Vector2f pos, int pointer_id) {
+void Game::touchEvent(Input::PointerAction action, Vector2f pos, int pointer_id) {
     if (error_)
         return;
 
     try {
-        if (action == PointerAction::kDown)
+        if (action == Input::PointerAction::kDown)
             script_manager_.pointerDownApiCall(pos, pointer_id);
-        else if (action == PointerAction::kUp)
+        else if (action == Input::PointerAction::kUp)
             script_manager_.pointerUpApiCall(pos, pointer_id);
         else
             script_manager_.pointerMoveApiCall(pos, pointer_id);
@@ -115,6 +116,26 @@ void Game::touchEventCancel() {
 
     try {
         script_manager_.pointerCancelApiCall();
+    } catch (std::exception &e) {
+        error_ = true;
+        buildErrorMessage(e.what());
+    }
+}
+
+void Game::mouseButtonEvent(Input::Mouse::Button button, Input::Mouse::ButtonState button_state, Vector2d position) {
+    const char *button_name;
+    if (button == Input::Mouse::Button::kLeft)
+        button_name = "l";
+    else if (button == Input::Mouse::Button::kRight)
+        button_name = "r";
+    else
+        button_name = "m";
+
+    try {
+        if (button_state == Input::Mouse::ButtonState::kPress)
+            script_manager_.mouseButtonPressedApiCall(button_name, position);
+        else
+            script_manager_.mouseButtonReleasedApiCall(button_name, position);
     } catch (std::exception &e) {
         error_ = true;
         buildErrorMessage(e.what());

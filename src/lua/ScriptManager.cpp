@@ -37,7 +37,7 @@ ScriptManager::ScriptManager() {
     registerImpl();
     lua_newtable(L_);
     lua_pushvalue(L_, -1);
-    lua_setglobal(L_, "Engine");
+    lua_setglobal(L_, kEngineTableName);
     Lua::Font::registerLua(L_);
     Lua::World::registerLua(L_);
     Lua::Keyboard::registerLua(L_);
@@ -45,8 +45,8 @@ ScriptManager::ScriptManager() {
     Lua::Sprite::registerLua(L_);
     Lua::Window::registerLua(L_);
     Lua::Texture::registerLua(L_);
-    lua_newtable(L_);
-    lua_setfield(L_, -2, "Touchscreen");
+    registerEmptyTable(kTouchscreenModuleName);
+    registerEmptyTable(kMouseModuleName);
 }
 
 ScriptManager::~ScriptManager() {
@@ -73,7 +73,7 @@ void ScriptManager::timeStepApiCall(double time) {
 }
 
 void ScriptManager::keyPressedApiCall(const std::string &key) {
-    if (!getCallback("Keyboard", "keyPressed"))
+    if (!getCallback(Lua::Keyboard::kModuleName, "keyPressed"))
         return;
     lua_pushstring(L_, key.c_str());
     if (lua_pcall(L_, 1, 0, 0) != LUA_OK)
@@ -81,7 +81,7 @@ void ScriptManager::keyPressedApiCall(const std::string &key) {
 }
 
 void ScriptManager::keyReleasedApiCall(const std::string &key) {
-    if (!getCallback("Keyboard", "keyReleased"))
+    if (!getCallback(Lua::Keyboard::kModuleName, "keyReleased"))
         return;
     lua_pushstring(L_, key.c_str());
     if (lua_pcall(L_, 1, 0, 0) != LUA_OK)
@@ -90,7 +90,7 @@ void ScriptManager::keyReleasedApiCall(const std::string &key) {
 
 void ScriptManager::pointerDownApiCall(Vector2f pos, int pointer_id) {
     Log::dbg("Down");
-    if (!getCallback("Touchscreen", "pointerDown"))
+    if (!getCallback(kTouchscreenModuleName, "pointerDown"))
         return;
     lua_pushnumber(L_, pos.x);
     lua_pushnumber(L_, pos.y);
@@ -101,7 +101,7 @@ void ScriptManager::pointerDownApiCall(Vector2f pos, int pointer_id) {
 
 void ScriptManager::pointerUpApiCall(Vector2f pos, int pointer_id) {
     Log::dbg("Up");
-    if (!getCallback("Touchscreen", "pointerUp"))
+    if (!getCallback(kTouchscreenModuleName, "pointerUp"))
         return;
     lua_pushnumber(L_, pos.x);
     lua_pushnumber(L_, pos.y);
@@ -111,7 +111,7 @@ void ScriptManager::pointerUpApiCall(Vector2f pos, int pointer_id) {
 }
 
 void ScriptManager::pointerMoveApiCall(Vector2f pos, int pointer_id) {
-    if (!getCallback("Touchscreen", "pointerMove"))
+    if (!getCallback(kTouchscreenModuleName, "pointerMove"))
         return;
     lua_pushnumber(L_, pos.x);
     lua_pushnumber(L_, pos.y);
@@ -122,9 +122,29 @@ void ScriptManager::pointerMoveApiCall(Vector2f pos, int pointer_id) {
 
 void ScriptManager::pointerCancelApiCall() {
     Log::dbg("Cancel");
-    if (!getCallback("Touchscreen", "pointerCancel"))
+    if (!getCallback(kTouchscreenModuleName, "pointerCancel"))
         return;
     if (lua_pcall(L_, 0, 0, 0) != LUA_OK)
+        throwLuaError();
+}
+
+void ScriptManager::mouseButtonPressedApiCall(const char *button, Vector2d pos) {
+    if (!getCallback(kMouseModuleName, "buttonPressed"))
+        return;
+    lua_pushstring(L_, button);
+    lua_pushnumber(L_, pos.x);
+    lua_pushnumber(L_, pos.y);
+    if (lua_pcall(L_, 3, 0, 0) != LUA_OK)
+        throwLuaError();
+}
+
+void ScriptManager::mouseButtonReleasedApiCall(const char *button, Vector2d pos) {
+    if (!getCallback(kMouseModuleName, "buttonReleased"))
+        return;
+    lua_pushstring(L_, button);
+    lua_pushnumber(L_, pos.x);
+    lua_pushnumber(L_, pos.y);
+    if (lua_pcall(L_, 3, 0, 0) != LUA_OK)
         throwLuaError();
 }
 
@@ -135,7 +155,7 @@ void ScriptManager::checkStack(int &top) {
     if (top != 1) { // If the engine table is not the only thing on the stack
         Log::warn("ScriptManager::checkStack(): Lua wrapper stack error: {}. Repairing the stack...", error);
         lua_settop(L_, 0);
-        lua_getglobal(L_, "Engine");
+        lua_getglobal(L_, kEngineTableName);
         top = 1;
     }
 }
@@ -147,7 +167,7 @@ bool ScriptManager::getCallback(const char *module, const char *name)
     lua_getfield(L_, -1, module);
     if (lua_isnil(L_, -1)) {
         lua_settop(L_, top);
-        throw WrapperError(std::format("Could not find module: Engine.{}", module));
+        throw WrapperError(std::format("Could not find module: {}.{}", kEngineTableName, module));
     }
     lua_getfield(L_, -1, name);
     if (lua_isnil(L_, -1)) {
@@ -168,6 +188,11 @@ bool ScriptManager::getCallback(const char *name)
         return false;
     }
     return true;
+}
+
+void ScriptManager::registerEmptyTable(const char *name) {
+    lua_newtable(L_);
+    lua_setfield(L_, -2, name);
 }
 
 void ScriptManager::throwLuaError() {

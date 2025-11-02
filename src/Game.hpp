@@ -12,27 +12,19 @@
 #include "renderer/WorldRenderer.hpp"
 #include "text/Font.hpp"
 #include "util/Vector.hpp"
+#include "Input.hpp"
 
 class Game {
 public:
-    enum class KeyState {
-        kPress,
-        kRelease
-    };
-    enum class PointerAction {
-        kDown,
-        kUp,
-        kMove
-    };
-
     Game(Vector2i window_size, int monitor_height, float ui_scale, int random_seed);
     ~Game();
     void windowSize(Vector2i size);
     void render();
     void timeStep(double time);
-    void keyEvent(const std::string &key, KeyState state);
-    void touchEvent(PointerAction action, Vector2f pos, int pointer_id);
+    void keyEvent(const std::string &key, Input::KeyState state);
+    void touchEvent(Input::PointerAction action, Vector2f pos, int pointer_id);
     void touchEventCancel();
+    void mouseButtonEvent(Input::Mouse::Button button, Input::Mouse::ButtonState button_state, Vector2d position);
     Font &getDefaultFont();
     WorldRenderer &getWorldRenderer();
     Vector2i getWindowSize();

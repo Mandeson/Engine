@@ -10,7 +10,7 @@ void Lua::Keyboard::registerLua(lua_State *L) {
     luaL_setfuncs(L, funcs, 0);
     lua_pushvalue(L, -1);
     lua_setfield(L, -2, "__index");
-    lua_setfield(L, -2, "Keyboard");
+    lua_setfield(L, -2, kModuleName);
 }
 
 int Lua::Keyboard::isKeyPressedS(lua_State *L) noexcept {

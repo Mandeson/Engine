@@ -68,8 +68,8 @@ void EngineImpl::readInput() {
         return;
     for (size_t motion_event_index = 0; motion_event_index < input_buffer->motionEventsCount; motion_event_index++) {
         const GameActivityMotionEvent &event = input_buffer->motionEvents[motion_event_index];
+        int action = event.action & AMOTION_EVENT_ACTION_MASK;
         if (event.source == AINPUT_SOURCE_TOUCHSCREEN) {
-            int action = event.action & AMOTION_EVENT_ACTION_MASK;
             if (action == AMOTION_EVENT_ACTION_MOVE) {
                 for (size_t pointer_index = 0; pointer_index < event.pointerCount; pointer_index++) {
                     int pointer_id = event.pointers[pointer_index].id;
@@ -77,7 +77,7 @@ void EngineImpl::readInput() {
                             GameActivityPointerAxes_getX(&event.pointers[pointer_index]),
                             GameActivityPointerAxes_getY(&event.pointers[pointer_index])
                     };
-                    game_->touchEvent(Game::PointerAction::kMove, pointer_pos, pointer_id);
+                    game_->touchEvent(Input::PointerAction::kMove, pointer_pos, pointer_id);
                     //Log::dbg("move {} {} {}", pointer_id, pointer_pos.x, pointer_pos.y);
                 }
             } else if (action == AMOTION_EVENT_ACTION_CANCEL) {
@@ -86,18 +86,40 @@ void EngineImpl::readInput() {
                 int pointer_index = (event.action & AMOTION_EVENT_ACTION_POINTER_INDEX_MASK) >> AMOTION_EVENT_ACTION_POINTER_INDEX_SHIFT;
                 int pointer_id = event.pointers[pointer_index].id;
                 Vector2f pointer_pos = {
-                        GameActivityPointerAxes_getX(&event.pointers[pointer_index]),
-                        GameActivityPointerAxes_getY(&event.pointers[pointer_index])
+                    GameActivityPointerAxes_getX(&event.pointers[pointer_index]),
+                    GameActivityPointerAxes_getY(&event.pointers[pointer_index])
                 };
                 if (action == AMOTION_EVENT_ACTION_DOWN ||
                     action == AMOTION_EVENT_ACTION_POINTER_DOWN) {
                     //Log::dbg("down {} {} {}", pointer_index, pointer_id, pointer_pos.x, pointer_pos.y);
-                    game_->touchEvent(Game::PointerAction::kDown, pointer_pos, pointer_id);
+                    game_->touchEvent(Input::PointerAction::kDown, pointer_pos, pointer_id);
                 } else if (action == AMOTION_EVENT_ACTION_UP ||
                            action == AMOTION_EVENT_ACTION_POINTER_UP) {
                     //Log::dbg("up {} {} {}", pointer_index, pointer_id, pointer_pos.x, pointer_pos.y);
-                    game_->touchEvent(Game::PointerAction::kUp, pointer_pos, pointer_id);
+                    game_->touchEvent(Input::PointerAction::kUp, pointer_pos, pointer_id);
                 }
+            }
+        } else if (event.source == AINPUT_SOURCE_MOUSE) {
+            int pointer_index = (event.action & AMOTION_EVENT_ACTION_POINTER_INDEX_MASK) >> AMOTION_EVENT_ACTION_POINTER_INDEX_SHIFT;
+            Vector2d pos = Vector2{
+                GameActivityPointerAxes_getX(&event.pointers[pointer_index]),
+                GameActivityPointerAxes_getY(&event.pointers[pointer_index])
+            };
+
+            if (action == AMOTION_EVENT_ACTION_BUTTON_PRESS) {
+                if (event.actionButton == AMOTION_EVENT_BUTTON_PRIMARY)
+                    game_->mouseButtonEvent(Input::Mouse::Button::kLeft, Input::Mouse::ButtonState::kPress, pos);
+                else if (event.actionButton == AMOTION_EVENT_BUTTON_SECONDARY)
+                    game_->mouseButtonEvent(Input::Mouse::Button::kRight, Input::Mouse::ButtonState::kPress, pos);
+                else if (event.actionButton == AMOTION_EVENT_BUTTON_TERTIARY)
+                    game_->mouseButtonEvent(Input::Mouse::Button::kMiddle, Input::Mouse::ButtonState::kPress, pos);
+            } else if (action == AMOTION_EVENT_ACTION_BUTTON_RELEASE) {
+                if (event.actionButton == AMOTION_EVENT_BUTTON_PRIMARY)
+                    game_->mouseButtonEvent(Input::Mouse::Button::kLeft, Input::Mouse::ButtonState::kRelease, pos);
+                else if (event.actionButton == AMOTION_EVENT_BUTTON_SECONDARY)
+                    game_->mouseButtonEvent(Input::Mouse::Button::kRight, Input::Mouse::ButtonState::kRelease, pos);
+                else if (event.actionButton == AMOTION_EVENT_BUTTON_TERTIARY)
+                    game_->mouseButtonEvent(Input::Mouse::Button::kMiddle, Input::Mouse::ButtonState::kRelease, pos);
             }
         }
     }
@@ -117,9 +139,9 @@ void EngineImpl::readInput() {
         const GameActivityKeyEvent &event = input_buffer->keyEvents[i];
         if (kKeys.contains(event.keyCode)) {
             if (event.action == AKEY_EVENT_ACTION_DOWN)
-                game_->keyEvent(kKeys.at(event.keyCode), Game::KeyState::kPress);
+                game_->keyEvent(kKeys.at(event.keyCode), Input::KeyState::kPress);
             else if (event.action == AKEY_EVENT_ACTION_UP)
-                game_->keyEvent(kKeys.at(event.keyCode), Game::KeyState::kRelease);
+                game_->keyEvent(kKeys.at(event.keyCode), Input::KeyState::kRelease);
         }
     }
     android_app_clear_key_events(input_buffer);
