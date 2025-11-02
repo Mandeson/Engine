@@ -85,10 +85,11 @@ void Texture::bind(PipelineState &pipeline_state) {
         else
             mag_filter = GL_LINEAR;
 
+#ifndef GL_GLES_PROTOTYPES // GL_GENERATE_MIPMAP is defined in OpenGL compatibility header only, so this code doesn't compile when using system GLES headers
         if (filtering_ == Filtering::kMipmapLinear && !OpenGL::isGLES()) {
-            // This parameter is OpenGL compatibility only, cannot be used in GLES
             glTexParameteri(GL_TEXTURE_2D, GL_GENERATE_MIPMAP, GL_TRUE);
         }
+#endif
         glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, mag_filter);
         glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, min_filter);
         glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
