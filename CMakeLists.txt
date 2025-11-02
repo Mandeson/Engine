@@ -43,7 +43,7 @@ endif()
 add_subdirectory(lib/upng)
 
 if (NOT MSVC)
-    set(CMAKE_CXX_FLAGS "-Wall")
+    set(CMAKE_CXX_FLAGS "-Wall -Wextra")
 endif()
 
 add_subdirectory(src)
