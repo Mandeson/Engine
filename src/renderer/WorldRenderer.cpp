@@ -4,7 +4,7 @@
 #include <cmath>
 
 WorldRenderer::WorldRenderer(PipelineState &pipeline_state, Vector2i window_size)
-        : pipeline_state_(pipeline_state), map_renderer_(pipeline_state, window_size), shader_("world") {
+        : pipeline_state_(pipeline_state), map_renderer_(pipeline_state), shader_("world") {
     a_pos_location_ = shader_.getAttribLocation("aPos");
     a_tex_coord_location_ = shader_.getAttribLocation("aTexCoord");
     u_window_size_location_ = shader_.getUniformLocation("uWindowSize");

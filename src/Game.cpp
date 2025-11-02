@@ -8,7 +8,7 @@
 
 std::weak_ptr<Core> g_core;
 
-Game::Game(Vector2i window_size, int monitor_height, float ui_scale, int random_seed)
+Game::Game(Vector2i window_size, [[maybe_unused]] int monitor_height, float ui_scale, [[maybe_unused]] int random_seed)
         : ui_scale_(ui_scale), window_size_(window_size), font_("Roboto-Regular.ttf"),
         error_text_(thread_pool_, font_, ui_scale * 18.0f), debug_display_(thread_pool_, font_, ui_scale),
         text_renderer_(pipeline_state_, window_size) {

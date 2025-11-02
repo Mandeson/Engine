@@ -6,7 +6,7 @@ void MapRenderer::FramebufferTexture::bind(PipelineState &pipeline_state) {
     pipeline_state.bindTexture(framebuffer_texture_id);
 }
 
-MapRenderer::MapRenderer(PipelineState &pipeline_state, Vector2i window_size) : pipeline_state_(pipeline_state) {
+MapRenderer::MapRenderer(PipelineState &pipeline_state) : pipeline_state_(pipeline_state) {
     OpenGL::glGenFramebuffersPtr(1, &FBO_);
     OpenGL::glBindFramebufferPtr(GL_FRAMEBUFFER, FBO_);
     glGenTextures(1, &framebuffer_texture_id_);

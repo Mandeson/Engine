@@ -12,7 +12,7 @@ public:
         GLuint framebuffer_texture_id;
         void bind(PipelineState &pipeline_state);
     };
-    MapRenderer(PipelineState &pipeline_state, Vector2i window_size);
+    MapRenderer(PipelineState &pipeline_state);
     ~MapRenderer();
     void build(Vector2i size, int pixel_scale);
     void renderFramebuffer(TextureRenderer &texture_renderer, Map &map, Vector2f camera_pos);

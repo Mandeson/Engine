@@ -210,7 +210,7 @@ bool OpenGL::isGLES() {
 	return g_is_gles;
 }
 
-void framebuffer_size_callback(GLFWwindow *window, int width, int height) {
+void framebuffer_size_callback(GLFWwindow *, int width, int height) {
 	auto game = EngineContext::game();
 	game->windowSize({width, height});
 #ifdef WIN32
@@ -220,7 +220,7 @@ void framebuffer_size_callback(GLFWwindow *window, int width, int height) {
 	Log::dbg("<Desktop> Resized: {} x {}", width, height);
 }
 
-void key_callback(GLFWwindow* window, int key, int scancode, int action, int mods) {
+void key_callback(GLFWwindow* window, int key, [[maybe_unused]] int scancode, int action, [[maybe_unused]] int mods) {
 	static const std::unordered_map<int, const char *> kKeys = {
 		{GLFW_KEY_W, "w"},
 		{GLFW_KEY_S, "s"},
