@@ -32,7 +32,7 @@ void warn(std::string_view str, Args&&... args) {
 }
 
 template<typename... Args>
-void dbg(std::string_view str, Args&&... args) {
+void dbg([[maybe_unused]] std::string_view str, [[maybe_unused]] Args&&... args) {
 #ifdef ENGINE_DEBUG
     printLineDbgImpl(std::vformat(str, std::make_format_args(args...)));
 #endif

@@ -12,7 +12,7 @@ void Log::warn(const std::string &str) {
     Log::printLineInfoImpl(str);
 }
 
-void Log::dbg(const std::string &str) {
+void Log::dbg([[maybe_unused]] const std::string &str) {
 #ifdef ENGINE_DEBUG
     Log::printLineInfoImpl(str);
 #endif
