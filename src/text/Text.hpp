@@ -2,6 +2,7 @@
 
 #include <climits>
 #include <condition_variable>
+#include <cstdint>
 #include <memory>
 #include <mutex>
 #include <string>
@@ -30,6 +31,9 @@ public:
     void setString(const std::string &str, Alignment alignment = Alignment::kLeft, int max_width = INT_MAX);
     void setScale(float scale);
 private:
+    void generateText(Text::Alignment alignment, int max_width);
+    void increaseRenderCount();
+
     ThreadPool &thread_pool_;
     FontAtlas &font_atlas_;
     bool background_work_active_ = false;
@@ -41,6 +45,10 @@ private:
     
     std::mutex mutex_;
     std::condition_variable background_work_condition_;
+
+    // Set when the engine detects that the text is changed every frame. Disables multithreading.
+    bool stream_draw_ = false;
+    uint8_t render_count_since_update_ = 0;
 
     float scale_ = 1.0f;
 
