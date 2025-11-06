@@ -1,6 +1,7 @@
 #include "ScriptManager.hpp"
 #include <format>
 #include "Font.hpp"
+#include "Text.hpp"
 #include "Texture.hpp"
 #include "TilesetSprite.hpp"
 #include "Sprite.hpp"
@@ -45,6 +46,7 @@ ScriptManager::ScriptManager() {
     Lua::Sprite::registerLua(L_);
     Lua::Window::registerLua(L_);
     Lua::Texture::registerLua(L_);
+    Lua::Text::registerLua(L_);
     registerEmptyTable(kTouchscreenModuleName);
     registerEmptyTable(kMouseModuleName);
 }

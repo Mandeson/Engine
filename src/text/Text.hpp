@@ -40,7 +40,7 @@ private:
     float font_size_;
     std::wstring str_;
 
-    // must use unique_ptr, because TextureBufferBuilder cannot be moved (it contains an atomic field)
+    // Must use unique_ptr, because TextureBufferBuilder cannot be moved (it contains an atomic field)
     std::vector<std::unique_ptr<TextureBufferBuilder>> render_units_;
     
     std::mutex mutex_;

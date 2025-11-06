@@ -23,7 +23,7 @@ int Lua::TilesetSprite::newS(lua_State *L) noexcept {
     auto sprite_id_ptr = reinterpret_cast<TilesetSpriteId *>(lua_newuserdata(L, sizeof(TilesetSpriteId)));
     try {
         auto &tileset = EngineContext::core()->getTilesetManager().getTileset(tileset_name);
-        *sprite_id_ptr = EngineContext::core()->getTilesetSpriteManager().newSprite(tileset, texture_pos, size);
+        *sprite_id_ptr = EngineContext::core()->getTilesetSpriteManager().newObject(tileset, texture_pos, size);
     } catch (std::exception &e) {
         lua_pop(L, 1);
         lua_pushnil(L);
@@ -72,7 +72,7 @@ int Lua::TilesetSprite::move(lua_State *L) noexcept {
 int Lua::TilesetSprite::__gc(lua_State *L) noexcept {
     Log::info("tileset sprite __gc");
     auto sprite_id_ptr = reinterpret_cast<TilesetSpriteId *>(luaL_checkudata(L, 1, kLuaMetaTable));
-    EngineContext::core()->getTilesetSpriteManager().destroySprite(*sprite_id_ptr);
+    EngineContext::core()->getTilesetSpriteManager().destroyObject(*sprite_id_ptr);
     *sprite_id_ptr = -1;
     return 0;
 }

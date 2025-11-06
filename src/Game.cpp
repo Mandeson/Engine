@@ -13,7 +13,7 @@ Game::Game(Vector2i window_size, [[maybe_unused]] int monitor_height, float ui_s
         error_text_(thread_pool_, font_, ui_scale * 18.0f), debug_display_(thread_pool_, font_, ui_scale),
         text_renderer_(pipeline_state_, window_size) {
     try {
-        core_ = std::make_shared<Core>(thread_pool_, window_size);
+        core_ = std::make_shared<Core>(thread_pool_, font_, window_size);
         g_core = core_;
         script_manager_.loadMainScript();
         script_manager_.initApiCall();
@@ -50,7 +50,7 @@ void Game::render() {
     glBlendFunc(GL_ONE, GL_ONE_MINUS_SRC_ALPHA);
     if (!error_) {
         try {
-            core_->render(pipeline_state_, *texture_renderer_, *world_renderer_);
+            core_->render(pipeline_state_, text_renderer_, *texture_renderer_, *world_renderer_);
             debug_display_.render(text_renderer_);
         } catch (std::exception &e) {
             error_ = true;
@@ -140,10 +140,6 @@ void Game::mouseButtonEvent(Input::Mouse::Button button, Input::Mouse::ButtonSta
         error_ = true;
         buildErrorMessage(e.what());
     }
-}
-
-Font &Game::getDefaultFont() {
-    return font_;
 }
 
 WorldRenderer &Game::getWorldRenderer() {

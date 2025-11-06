@@ -32,7 +32,7 @@ int Lua::Sprite::newS(lua_State *L) noexcept {
 
     auto sprite_id_ptr = reinterpret_cast<SpriteId *>(lua_newuserdata(L, sizeof(SpriteId)));
     try {
-        *sprite_id_ptr = EngineContext::core()->getSpriteManager().newSprite(*texture, TextureRect{texture_pos, size});
+        *sprite_id_ptr = EngineContext::core()->getSpriteManager().newObject(*texture, TextureRect{texture_pos, size});
     } catch (std::exception &e) {
         lua_pop(L, 1);
         lua_pushnil(L);
@@ -89,7 +89,7 @@ int Lua::Sprite::move(lua_State *L) noexcept {
 int Lua::Sprite::__gc(lua_State *L) noexcept {
     Log::info("sprite __gc");
     auto sprite_id_ptr = reinterpret_cast<SpriteId *>(luaL_checkudata(L, 1, kLuaMetaTable));
-    EngineContext::core()->getSpriteManager().destroySprite(*sprite_id_ptr);
+    EngineContext::core()->getSpriteManager().destroyObject(*sprite_id_ptr);
     *sprite_id_ptr = -1;
     return 0;
 }

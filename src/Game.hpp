@@ -25,7 +25,6 @@ public:
     void touchEvent(Input::PointerAction action, Vector2f pos, int pointer_id);
     void touchEventCancel();
     void mouseButtonEvent(Input::Mouse::Button button, Input::Mouse::ButtonState button_state, Vector2d position);
-    Font &getDefaultFont();
     WorldRenderer &getWorldRenderer();
 private:
     void buildErrorMessage(const char *message = nullptr);
