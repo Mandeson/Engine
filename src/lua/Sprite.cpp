@@ -5,6 +5,11 @@
 #include <cstdint>
 #include <lauxlib.h>
 
+struct SpriteLua {
+    SpriteId sprite_id = -1;
+    int texture_lua_ref = LUA_NOREF; // Lua reference to the associated Texture object
+};
+
 void Lua::Sprite::registerLua(lua_State *L) {
     luaL_newmetatable(L, kLuaStaticMetaTable);
     const struct luaL_Reg funcs[] = {
@@ -30,16 +35,21 @@ int Lua::Sprite::newS(lua_State *L) noexcept {
     Vector2<uint16_t> texture_pos = Vector2{luaL_checkinteger(L, 2), luaL_checkinteger(L, 3)};
     Vector2i size = Vector2{luaL_checkinteger(L, 4), luaL_checkinteger(L, 5)};
 
-    auto sprite_id_ptr = reinterpret_cast<SpriteId *>(lua_newuserdata(L, sizeof(SpriteId)));
+    auto sprite_lua_ptr = reinterpret_cast<SpriteLua *>(lua_newuserdata(L, sizeof(SpriteLua)));
+    *sprite_lua_ptr = SpriteLua{}; // Initialize fields
     try {
-        *sprite_id_ptr = EngineContext::core()->getSpriteManager().newObject(*texture, TextureRect{texture_pos, size});
+        sprite_lua_ptr->sprite_id = EngineContext::core()->getSpriteManager().newObject(*texture, TextureRect{texture_pos, size});
     } catch (std::exception &e) {
         lua_pop(L, 1);
         lua_pushnil(L);
         luaL_error(L, e.what());
         return 1;
     }
-    Log::info("sprite newS");
+
+    lua_pushvalue(L, 1);
+    sprite_lua_ptr->texture_lua_ref = luaL_ref(L, LUA_REGISTRYINDEX);;
+
+    Log::dbg("sprite newS");
     if (luaL_newmetatable(L, kLuaMetaTable)) {
         const struct luaL_Reg methods[] = {
             {"setPos", setPos},
@@ -58,38 +68,42 @@ int Lua::Sprite::newS(lua_State *L) noexcept {
 }
 
 int Lua::Sprite::setPos(lua_State *L) noexcept {
-    auto sprite_id = *reinterpret_cast<SpriteId *>(luaL_checkudata(L, 1, kLuaMetaTable));
+    auto sprite_lua_ptr = reinterpret_cast<SpriteLua *>(luaL_checkudata(L, 1, kLuaMetaTable));
     Vector2d pos = Vector2{luaL_checknumber(L, 2), luaL_checknumber(L, 3)};
-    EngineContext::core()->getSpriteManager().setPos(sprite_id, pos);
+    EngineContext::core()->getSpriteManager().setPos(sprite_lua_ptr->sprite_id, pos);
     return 0;
 }
 
 int Lua::Sprite::setSize(lua_State *L) noexcept {
-    auto sprite_id = *reinterpret_cast<SpriteId *>(luaL_checkudata(L, 1, kLuaMetaTable));
+    auto sprite_lua_ptr = reinterpret_cast<SpriteLua *>(luaL_checkudata(L, 1, kLuaMetaTable));
     Vector2i size = Vector2{luaL_checkinteger(L, 2), luaL_checkinteger(L, 3)};
-    EngineContext::core()->getSpriteManager().setSize(sprite_id, size);
+    EngineContext::core()->getSpriteManager().setSize(sprite_lua_ptr->sprite_id, size);
     return 0;
 }
 
 int Lua::Sprite::getPos(lua_State *L) noexcept {
-    auto sprite_id = *reinterpret_cast<SpriteId *>(luaL_checkudata(L, 1, kLuaMetaTable));
-    Vector2d pos = EngineContext::core()->getSpriteManager().getPos(sprite_id);
+    auto sprite_lua_ptr = reinterpret_cast<SpriteLua *>(luaL_checkudata(L, 1, kLuaMetaTable));
+    Vector2d pos = EngineContext::core()->getSpriteManager().getPos(sprite_lua_ptr->sprite_id);
     lua_pushnumber(L, pos.x);
     lua_pushnumber(L, pos.y);
     return 2;
 }
 
 int Lua::Sprite::move(lua_State *L) noexcept {
-    auto sprite_id = *reinterpret_cast<SpriteId *>(luaL_checkudata(L, 1, kLuaMetaTable));
+    auto sprite_lua_ptr = reinterpret_cast<SpriteLua *>(luaL_checkudata(L, 1, kLuaMetaTable));
     Vector2d move = Vector2{luaL_checknumber(L, 2), luaL_checknumber(L, 3)};
-    EngineContext::core()->getSpriteManager().move(sprite_id, move);
+    EngineContext::core()->getSpriteManager().move(sprite_lua_ptr->sprite_id, move);
     return 0;
 }
 
 int Lua::Sprite::__gc(lua_State *L) noexcept {
-    Log::info("sprite __gc");
-    auto sprite_id_ptr = reinterpret_cast<SpriteId *>(luaL_checkudata(L, 1, kLuaMetaTable));
-    EngineContext::core()->getSpriteManager().destroyObject(*sprite_id_ptr);
-    *sprite_id_ptr = -1;
+    Log::dbg("sprite __gc");
+    auto sprite_lua_ptr = reinterpret_cast<SpriteLua *>(luaL_checkudata(L, 1, kLuaMetaTable));
+    EngineContext::core()->getSpriteManager().destroyObject(sprite_lua_ptr->sprite_id);
+    sprite_lua_ptr->sprite_id = -1;
+    if (sprite_lua_ptr->texture_lua_ref != LUA_NOREF) {
+        luaL_unref(L, LUA_REGISTRYINDEX, sprite_lua_ptr->texture_lua_ref);
+        sprite_lua_ptr->texture_lua_ref = LUA_NOREF;
+    }
     return 0;
 }

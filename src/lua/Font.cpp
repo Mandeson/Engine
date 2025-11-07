@@ -33,7 +33,7 @@ int Lua::Font::loadS(lua_State *L) noexcept {
         return 1;
     }
     ptr->destructible = true;
-    Log::dbg("font loadLua");
+    Log::dbg("font loadS");
     if (luaL_newmetatable(L, kLuaMetaTable)) {
         const struct luaL_Reg methods[] = {
             {"__gc", __gc},
@@ -51,7 +51,7 @@ int Lua::Font::getDefaultS(lua_State *L) noexcept {
     FontLua *ptr = reinterpret_cast<FontLua *>(lua_newuserdata(L, sizeof(FontLua)));
     ptr->font = &EngineContext::core()->getDefaultFont();
     ptr->destructible = false;
-    Log::dbg("font getDefaultLua");
+
     if (luaL_newmetatable(L, kLuaMetaTable)) {
         const struct luaL_Reg methods[] = {
             {"__gc", __gc},
@@ -66,6 +66,7 @@ int Lua::Font::getDefaultS(lua_State *L) noexcept {
 }
 
 int Lua::Font::__gc(lua_State *L) noexcept {
+    Log::dbg("font __gc");
     auto *ptr = reinterpret_cast<FontLua *>(luaL_checkudata(L, 1, kLuaMetaTable));
     if (ptr->destructible)
         delete ptr->font;

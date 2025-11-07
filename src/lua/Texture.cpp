@@ -21,6 +21,7 @@ int Lua::Texture::loadS(lua_State *L) {
     // The Texture constructor doesn't throw any exceptions
     *texture_ptr = new ::Texture(EngineContext::core()->getThreadPool(), texture_name);
 
+    Log::info("texture loadS");
     if (luaL_newmetatable(L, kLuaMetaTable)) {
         const struct luaL_Reg methods[] = {
             {"__gc", __gc},
@@ -35,6 +36,7 @@ int Lua::Texture::loadS(lua_State *L) {
 }
 
 int Lua::Texture::__gc(lua_State *L) {
+    Log::info("texture __gc");
     auto *ptr = reinterpret_cast<::Texture **>(luaL_checkudata(L, 1, kLuaMetaTable));
     delete *ptr;
     *ptr = nullptr;
