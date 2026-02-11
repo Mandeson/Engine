@@ -6,7 +6,7 @@ A multiplatform, data-driven 2D game engine written in C++ and scriptable in Lua
 * MacOS
 * Android
 
-### Freatures
+### Features
 * Text rendering (highly performant, font atlas based) - uses TrueType vectorized fonts
   * Font rasterization takes place in a background thread
 * PNG texture loading
@@ -25,13 +25,13 @@ A multiplatform, data-driven 2D game engine written in C++ and scriptable in Lua
   * OpenGL 2.1 with GL_EXT_framebuffer_object extension
   * OpenGL ES 2.0
 
-  The graphics API is detected automatically on launch.
+  The graphics API is detected automatically at launch.
 
 ### Building
 * An example project that uses the engine as a submodule can be found [here](https://github.com/Mandeson/Engine-Demo.git)
 * The project uses CMake
 * All required libraries are either found in the system (default on GNU/Linux) or downloaded from GitHub
-  * You can manually choose how to obtain libraries by defining the followind CMake build options to ON or OFF:
+  * You can manually choose how to obtain libraries by defining the following CMake build options to ON or OFF:
     * **ENGINE_USE_SYSTEM_LUA_LIB** - must be manually set to OFF on Debian due to different Lua header directories
     * **ENGINE_USE_SYSTEM_GLM_LIB**
     * **ENGINE_USE_SYSTEM_FREETYPE_LIB**
