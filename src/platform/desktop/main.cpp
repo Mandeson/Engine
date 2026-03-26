@@ -17,6 +17,9 @@
 constexpr Vector2i kWindowDefaultSize = {800, 600};
 constexpr const char *kWindowTitle = "Game";
 constexpr const char *kRunningOpenGLVersionText = "<Desktop> Using OpenGL {}";
+constexpr int kDeltaFilterWidth = 10000;
+constexpr int kDeltaFilterMaxAnomally = 20;
+constexpr double kMaxDeltaTime = 0.1;
 
 std::weak_ptr<Game> g_game;
 Vector2f cursor_pos;
@@ -106,16 +109,47 @@ int main() {
 					glfwSetMouseButtonCallback(window, mouse_button_callback);
 
 					std::optional<std::chrono::high_resolution_clock::time_point> last_time;
+					double avg_delta = 0.0;
+					int frame_count = 0;
+					int anomally_length = 0;
+					int anomally_direction = 0;
 					while(!glfwWindowShouldClose(window)) {
 						if (!last_time.has_value()) {
 							last_time = std::chrono::high_resolution_clock::now();
 						} else {
-							auto new_time = std::chrono::high_resolution_clock::now();;
+							auto new_time = std::chrono::high_resolution_clock::now();
 							auto duration = new_time - *last_time;
 							double delta = std::chrono::duration<double>(duration).count();
 							last_time = new_time;
 
-							game->timeStep(delta);
+							if (delta < kMaxDeltaTime) {
+								if (delta > avg_delta) {
+									if (anomally_direction == 0) {
+										anomally_length = 0;
+									}
+									anomally_direction = 1;
+									anomally_length++;
+								} else if (delta < avg_delta) {
+									if (anomally_direction == 1) {
+										anomally_length = 0;
+									}
+									anomally_direction = 0;
+									anomally_length++;
+								}
+								if (anomally_length == kDeltaFilterMaxAnomally) {
+									frame_count = 0;
+									avg_delta = 0.0;
+									anomally_length = 0;
+								}
+
+								if (frame_count < kDeltaFilterWidth)
+									frame_count++;
+
+								double weight = 1.0 / frame_count;
+								avg_delta = (1.0 - weight) * avg_delta + weight * delta;
+
+								game->timeStep(avg_delta);
+							}
 						}
 						game->render();
 
