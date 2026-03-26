@@ -196,7 +196,8 @@ GLint OpenGL::getMonochromeTextureFormat() {
 	return GL_RED;
 }
 
-void framebuffer_size_callback(GLFWwindow *, int width, int height) {
+void framebuffer_size_callback(GLFWwindow *window, int width, int height) {
+	(void)window;
 	auto game = EngineContext::game();
 	game->windowSize({width, height});
 #ifdef WIN32
