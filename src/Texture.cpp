@@ -85,11 +85,6 @@ void Texture::bind(PipelineState &pipeline_state) {
         else
             mag_filter = GL_LINEAR;
 
-#ifndef GL_GLES_PROTOTYPES // GL_GENERATE_MIPMAP is defined in OpenGL compatibility header only, so this code doesn't compile when using system GLES headers
-        if (filtering_ == Filtering::kMipmapLinear && !OpenGL::isGLES()) {
-            glTexParameteri(GL_TEXTURE_2D, GL_GENERATE_MIPMAP, GL_TRUE);
-        }
-#endif
         glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, mag_filter);
         glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, min_filter);
         glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
@@ -100,8 +95,7 @@ void Texture::bind(PipelineState &pipeline_state) {
                 size_.y, 0, format, GL_UNSIGNED_BYTE,
                 reinterpret_cast<void *>(&pixel_buffer_[0]));
         
-        if (filtering_ == Filtering::kMipmapLinear && OpenGL::isGLES()) {
-            // In OpenGL 2.1 glGenerateMipmap in not supported, so use it only in GLES
+        if (filtering_ == Filtering::kMipmapLinear) {
             glGenerateMipmap(GL_TEXTURE_2D);
         }
         uploaded_ = true;

@@ -16,44 +16,15 @@
 
 constexpr Vector2i kWindowDefaultSize = {800, 600};
 constexpr const char *kWindowTitle = "Game";
-constexpr const char *kRunningOpenGLVersionText = "<Desktop> Running OpenGL {}";
-
-void (*OpenGL::glBindFramebufferPtr)(GLenum, GLuint);
-void (*OpenGL::glDeleteFramebuffersPtr)(GLsizei, const GLuint *);
-void (*OpenGL::glGenFramebuffersPtr)(GLsizei, GLuint *);
-GLenum (*OpenGL::glCheckFramebufferStatusPtr)(GLenum);
-void (*OpenGL::glFramebufferTexture2DPtr)(GLenum, GLenum, GLenum, GLuint, GLint);
+constexpr const char *kRunningOpenGLVersionText = "<Desktop> Using OpenGL {}";
 
 std::weak_ptr<Game> g_game;
-bool g_is_gles = false;
 Vector2f cursor_pos;
 
 void framebuffer_size_callback(GLFWwindow *window, int width, int height);
 void key_callback(GLFWwindow* window, int key, int scancode, int action, int mods);
 void cursor_position_callback(GLFWwindow* window, double xpos, double ypos);
 void mouse_button_callback(GLFWwindow* window, int button, int action, int mods);
-
-static void setupGLES() {
-	glfwWindowHint(GLFW_CLIENT_API, GLFW_OPENGL_ES_API);
-	glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, 2);
-	glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 0);
-}
-
-static void loadDefaultOpenGLFramebufferPtrs() {
-	OpenGL::glBindFramebufferPtr = glBindFramebuffer;
-	OpenGL::glDeleteFramebuffersPtr = glDeleteFramebuffers;
-	OpenGL::glGenFramebuffersPtr = glGenFramebuffers;
-	OpenGL::glCheckFramebufferStatusPtr = glCheckFramebufferStatus;
-	OpenGL::glFramebufferTexture2DPtr = glFramebufferTexture2D;
-}
-
-static void loadExtensionOpenGLFramebufferPtrs() {
-	OpenGL::glBindFramebufferPtr = glBindFramebufferEXT;
-	OpenGL::glDeleteFramebuffersPtr = glDeleteFramebuffersEXT;
-	OpenGL::glGenFramebuffersPtr = glGenFramebuffersEXT;
-	OpenGL::glCheckFramebufferStatusPtr = glCheckFramebufferStatusEXT;
-	OpenGL::glFramebufferTexture2DPtr = glFramebufferTexture2DEXT;
-}
 
 static GLFWwindow *createWindow(Vector2i window_size, Vector2i monitor_size) {
 	GLFWwindow *window = glfwCreateWindow(window_size.x, window_size.y, kWindowTitle, NULL, NULL);
@@ -72,7 +43,10 @@ int main() {
 		return -1;
 	}
 	Log::info("<Desktop> Initialized GLFW");
-	//glfwWindowHint(GLFW_SAMPLES, 8);
+	// glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, 3);
+	// glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 2);
+	// glfwWindowHint(GLFW_OPENGL_FORWARD_COMPAT, GL_TRUE);
+	// glfwWindowHint(GLFW_OPENGL_PROFILE, GLFW_OPENGL_CORE_PROFILE);
 	Vector2i monitor_size = kWindowDefaultSize;
 	auto monitor = glfwGetPrimaryMonitor();
 	if (monitor) {
@@ -86,111 +60,80 @@ int main() {
 	else if (monitor_size.y >= 2000)
 		ui_scale = 2.0f;
 	Vector2i window_size = kWindowDefaultSize * ui_scale;
-#ifdef FORCE_GLES
-	setupGLES();
-#endif
 	GLFWwindow *window = createWindow(window_size, monitor_size);
 	if (window != NULL) {
 		Log::info("<Desktop> Created window");
-		bool error = false;
-#ifdef FORCE_GLES
-		if (gladLoadGLES2Loader((GLADloadproc)glfwGetProcAddress)) {
-			if (GLAD_GL_ES_VERSION_2_0) {
-				g_is_gles = true;
-				loadDefaultOpenGLFramebufferPtrs();
-				Log::info(kRunningOpenGLVersionText, "ES 2.0");
-			} else {
-				error = true;
-				Log::info("<Desktop> OpenGL version too old. Engine requires OpenGL ES 2.0");
-			}
-		} else {
-			error = true;
-		}
-#else
-		if (gladLoadGLLoader((GLADloadproc)glfwGetProcAddress)) {
+		if (gladLoadGL((GLADloadfunc)glfwGetProcAddress)) {
+			bool error = false;
 			if (GLAD_GL_VERSION_3_0) {
-				loadDefaultOpenGLFramebufferPtrs();
 				Log::info(kRunningOpenGLVersionText, "3.0");
-			} else if (GLAD_GL_VERSION_2_1 && GLAD_GL_EXT_framebuffer_object) {
-				loadExtensionOpenGLFramebufferPtrs();
-				Log::info(kRunningOpenGLVersionText, "2.1 (GL_EXT_framebuffer_object)");
+			} else if (GLAD_GL_VERSION_2_1 && GLAD_GL_ARB_framebuffer_object) {
+				Log::info(kRunningOpenGLVersionText, "2.1 (GL_ARB_framebuffer_object)");
 			} else {
-				glfwDestroyWindow(window);
-				setupGLES();
-				window = createWindow(window_size, monitor_size);
-				if (window != NULL && gladLoadGLES2Loader((GLADloadproc)glfwGetProcAddress) && GLAD_GL_ES_VERSION_2_0) {
-					g_is_gles = true;
-					loadDefaultOpenGLFramebufferPtrs();
-					Log::info(kRunningOpenGLVersionText, "ES 2.0");
+				Log::info("<Desktop> OpenGL version insufficient: {}", (const char *)glGetString(GL_VERSION));
+				error = true;
+			}
+
+			if(!error) {
+				Log::info("<Desktop> Available OpenGL version: {}", (const char *)glGetString(GL_VERSION));
+				// Clear the screen to black
+				glClearColor(0.0, 0.0, 0.0, 1.0);
+				glClear(GL_COLOR_BUFFER_BIT);
+				glfwSwapBuffers(window);
+				glfwPollEvents();
+	#ifdef __linux__
+				int random_seed;
+				int *seed_ptr = (int *)getauxval(AT_RANDOM);
+				if (seed_ptr != NULL) {
+					random_seed = *seed_ptr;
+					Log::info("<Desktop> Got random seed from gexauxval(AT_RANDOM): {}", random_seed);
 				} else {
-					error = true;
-					Log::info("<Desktop> OpenGL version too old. Engine requires either OpenGL 3.0, "
-							"OpenGL 2.1 + GL_EXT_framebuffer_object or OpenGL ES 2.0");
+					random_seed = time(0);
+					Log::info("<Desktop> Got random seed from time(0): {}", random_seed);
 				}
-			}
-		} else {
-			error = true;
-		}
-#endif
-		if(!error) {
-			Log::info("<Desktop> Available OpenGL version: {}", (const char *)glGetString(GL_VERSION));
-			// Clear the screen to black
-			glClearColor(0.0, 0.0, 0.0, 1.0);
-			glClear(GL_COLOR_BUFFER_BIT);
-			glfwSwapBuffers(window);
-			glfwPollEvents();
-#ifdef __linux__
-			int random_seed;
-			int *seed_ptr = (int *)getauxval(AT_RANDOM);
-			if (seed_ptr != NULL) {
-				random_seed = *seed_ptr;
-				Log::info("<Desktop> Got random seed from gexauxval(AT_RANDOM): {}", random_seed);
-			} else {
-				random_seed = time(0);
+	#else
+				int random_seed = time(0);
 				Log::info("<Desktop> Got random seed from time(0): {}", random_seed);
-			}
-#else
-			int random_seed = time(0);
-			Log::info("<Desktop> Got random seed from time(0): {}", random_seed);
-#endif
-			std::shared_ptr<Game> game;
-			try {
-				game = std::make_shared<Game>(window_size, monitor_size.y, ui_scale, random_seed);
-				g_game = game;
+	#endif
+				std::shared_ptr<Game> game;
+				try {
+					game = std::make_shared<Game>(window_size, monitor_size.y, ui_scale, random_seed);
+					g_game = game;
 
-				glfwSetFramebufferSizeCallback(window, framebuffer_size_callback);
-				glfwSetKeyCallback(window, key_callback);
-				glfwSetCursorPosCallback(window, cursor_position_callback);
-				glfwSetMouseButtonCallback(window, mouse_button_callback);
+					glfwSetFramebufferSizeCallback(window, framebuffer_size_callback);
+					glfwSetKeyCallback(window, key_callback);
+					glfwSetCursorPosCallback(window, cursor_position_callback);
+					glfwSetMouseButtonCallback(window, mouse_button_callback);
 
-				std::optional<std::chrono::high_resolution_clock::time_point> last_time;
-				while(!glfwWindowShouldClose(window)) {
-					if (!last_time.has_value()) {
-						last_time = std::chrono::high_resolution_clock::now();
-					} else {
-						auto new_time = std::chrono::high_resolution_clock::now();;
-						auto duration = new_time - *last_time;
-						double delta = std::chrono::duration<double>(duration).count();
-						last_time = new_time;
+					std::optional<std::chrono::high_resolution_clock::time_point> last_time;
+					while(!glfwWindowShouldClose(window)) {
+						if (!last_time.has_value()) {
+							last_time = std::chrono::high_resolution_clock::now();
+						} else {
+							auto new_time = std::chrono::high_resolution_clock::now();;
+							auto duration = new_time - *last_time;
+							double delta = std::chrono::duration<double>(duration).count();
+							last_time = new_time;
 
-						game->timeStep(delta);
+							game->timeStep(delta);
+						}
+						game->render();
+
+						glfwSwapBuffers(window);
+						glfwPollEvents();
 					}
-					game->render();
-
-					glfwSwapBuffers(window);
-					glfwPollEvents();
+				} catch (std::exception &e) {
+					Log::err(e.what());
+					Log::info("Terminating");
 				}
-			} catch (std::exception &e) {
-				Log::err(e.what());
-				Log::info("Terminating");
 			}
+			if (!g_game.expired())
+				Log::err("<Desktop> Termination error. Memory leak. Possibly somewhere a shared pointer to Game has been left");
+			glfwDestroyWindow(window);
+			Log::info("<Desktop> Destroyed window");
 		} else {
 			Log::err("<Desktop> Could not load OpenGL");
 		}
-		if (!g_game.expired())
-			Log::err("<Desktop> Termination error. Memory leak. Possibly somewhere a shared pointer to Game has been left");
-		glfwDestroyWindow(window);
-		Log::info("<Desktop> Destroyed window");
 	} else {
 		Log::err("<Desktop> Could not create window");
 	}
@@ -207,7 +150,16 @@ std::shared_ptr<Game> EngineContext::game() {
 }
 
 bool OpenGL::isGLES() {
-	return g_is_gles;
+	return false;
+}
+
+bool OpenGL::vertexArraysSupported() {
+	return GLAD_GL_VERSION_3_0 || GLAD_GL_ARB_vertex_array_object;
+}
+
+// On desktop OpenGL the format is GL_RED
+GLint OpenGL::getMonochromeTextureFormat() {
+	return GL_RED;
 }
 
 void framebuffer_size_callback(GLFWwindow *, int width, int height) {

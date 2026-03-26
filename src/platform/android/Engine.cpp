@@ -4,21 +4,7 @@
 #include "../../util/Logger.hpp"
 #include <game-activity/GameActivityEvents.h>
 
-void (*OpenGL::glBindFramebufferPtr)(GLenum, GLuint);
-void (*OpenGL::glDeleteFramebuffersPtr)(GLsizei, const GLuint *);
-void (*OpenGL::glGenFramebuffersPtr)(GLsizei, GLuint *);
-GLenum (*OpenGL::glCheckFramebufferStatusPtr)(GLenum);
-void (*OpenGL::glFramebufferTexture2DPtr)(GLenum, GLenum, GLenum, GLuint, GLint);
-
 std::weak_ptr<Game> g_game;
-
-static void loadDefaultOpenGLFramebufferPtrs() {
-    OpenGL::glBindFramebufferPtr = glBindFramebuffer;
-    OpenGL::glDeleteFramebuffersPtr = glDeleteFramebuffers;
-    OpenGL::glGenFramebuffersPtr = glGenFramebuffers;
-    OpenGL::glCheckFramebufferStatusPtr = glCheckFramebufferStatus;
-    OpenGL::glFramebufferTexture2DPtr = glFramebufferTexture2D;
-}
 
 std::shared_ptr<Game> EngineContext::game() {
     if (g_game.expired())
@@ -28,6 +14,15 @@ std::shared_ptr<Game> EngineContext::game() {
 
 bool OpenGL::isGLES() {
     return true;
+}
+
+bool OpenGL::vertexArraysSupported() {
+    return GLAD_GL_ES_VERSION_3_0 || GLAD_GL_OES_vertex_array_object;
+}
+
+// On OpenGL ES the format is GL_LUMINANCE (defined only in gles2.h)
+GLint OpenGL::getMonochromeTextureFormat() {
+    return GL_LUMINANCE;
 }
 
 EngineImpl::EngineImpl(struct android_app *app)
@@ -285,7 +280,7 @@ bool EngineImpl::initSurface() {
     eglGetConfigs(display_, nullptr, 0, &num_configs);
     std::unique_ptr<EGLConfig[]> configs = std::make_unique<EGLConfig[]>(num_configs);
     eglGetConfigs(display_, configs.get(), num_configs, &num_configs);
-    for (size_t i = 0; i < num_configs; i++) {
+    for (int i = 0; i < num_configs; i++) {
         EGLConfig config = *(configs.get() + i);
         EGLint red, green, blue, depth;
         if (eglGetConfigAttrib(display_, config, EGL_RED_SIZE, &red)
@@ -319,8 +314,14 @@ bool EngineImpl::initContext() {
         terminating_ = true;
         return false;
     }
+    if (gladLoadGLES2(eglGetProcAddress) == 0) {
+        Log::err("<Android> gladLoadGLES2 failed - cannot load OpenGL ES");
+        terminating_ = true;
+        return false;
+    }
+    Log::info("<Android> Running OpenGL ES version: {}", (const char *)glGetString(GL_VERSION));
+    Log::info("<Android> ES3: {}, GLAD_GL_OES_vertex_array_object: {}", GLAD_GL_ES_VERSION_3_0, GLAD_GL_OES_vertex_array_object);
     Log::info("<Android> Initialized context");
-    loadDefaultOpenGLFramebufferPtrs();
     return true;
 }
 

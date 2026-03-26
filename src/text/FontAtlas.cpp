@@ -90,15 +90,15 @@ GLuint FontAtlas::getAtlasTextureId(int texture_index, PipelineState &pipeline_s
         glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
         glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
         glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
-        glTexImage2D(GL_TEXTURE_2D, 0, GL_LUMINANCE, texture_size_,
-                texture_size_, 0, GL_LUMINANCE, GL_UNSIGNED_BYTE,
+        glTexImage2D(GL_TEXTURE_2D, 0, OpenGL::getMonochromeTextureFormat(), texture_size_,
+                texture_size_, 0, OpenGL::getMonochromeTextureFormat(), GL_UNSIGNED_BYTE,
                 reinterpret_cast<void *>(&texture.atlas_[0]));
         texture.texture_generated_ = true;
     } else {
         if (texture.dirty_) {
             pipeline_state.bindTexture(texture.texture_id_);
             glTexSubImage2D(GL_TEXTURE_2D, 0, 0, 0, texture_size_,
-                    texture_size_, GL_LUMINANCE, GL_UNSIGNED_BYTE,
+                    texture_size_, OpenGL::getMonochromeTextureFormat(), GL_UNSIGNED_BYTE,
                     reinterpret_cast<void *>(&texture.atlas_[0]));
         }
     }

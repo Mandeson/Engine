@@ -16,6 +16,8 @@ public:
             Log::dbg("Destroying buffer");
             glDeleteBuffers(1, &VBO_);
             glDeleteBuffers(1, &EBO_);
+            if (OpenGL::vertexArraysSupported())
+                glDeleteVertexArrays(1, &VAO_);
         }
     }
     void clear() {
@@ -40,34 +42,36 @@ protected:
         indices_.emplace_back(Triangle{indice_index_ + 2, indice_index_ + 3, indice_index_});
         indice_index_ += 4;
     }
-    // Call from render thread
-    bool bind(GLenum usage = GL_DYNAMIC_DRAW) {
+
+    bool empty() {
+        return render_elements_ == 0;
+    }
+
+    void rawBind() {
+        glBindBuffer(GL_ARRAY_BUFFER, VBO_);
+        glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, EBO_);
+    }
+
+    // Returns true if the buffer was bound during update
+    bool update(bool bound, GLenum usage = GL_DYNAMIC_DRAW) {
         if (dirty_) {
-            if (indice_index_ == 0) { // buffer empty
-                render_ready_ = false;
-                dirty_ = false;
-                Log::dbg("Buffer empty");
-                return render_ready_;
-            }
             Log::dbg("Flushing buffer");
             size_t indices = indices_.size();
             if (indices > allocated_indices_) {
-                if (!generated_) {
-                    glGenBuffers(1, &VBO_);
-                    glGenBuffers(1, &EBO_);
-                    generated_ = true;
+                if (!bound) {
+                    rawBind();
+                    bound = true;
                 }
-                glBindBuffer(GL_ARRAY_BUFFER, VBO_);
-                glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, EBO_);
                 glBufferData(GL_ARRAY_BUFFER, vertices_.size() * sizeof(V),
                         reinterpret_cast<void *>(&vertices_[0]), usage);
                 glBufferData(GL_ELEMENT_ARRAY_BUFFER, indices * sizeof(Triangle),
                         reinterpret_cast<void *>(&indices_[0]), usage);
                 allocated_indices_ = indices;
             } else if (indices != 0) {
-                assert(generated_);
-                glBindBuffer(GL_ARRAY_BUFFER, VBO_);
-                glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, EBO_);
+                if (!bound) {
+                    rawBind();
+                    bound = true;
+                }
                 glBufferSubData(GL_ARRAY_BUFFER, 0, vertices_.size() * sizeof(V),
                         reinterpret_cast<void *>(&vertices_[0]));
                 glBufferSubData(GL_ELEMENT_ARRAY_BUFFER, 0, indices * sizeof(Triangle),
@@ -76,12 +80,24 @@ protected:
             dirty_ = false;
             render_elements_ = indices * 3;
             render_ready_ = true;
-        } else if (generated_ && render_ready_) {
-            glBindBuffer(GL_ARRAY_BUFFER, VBO_);
-            glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, EBO_);
         }
-        return render_ready_;
+
+        return bound;
     }
+
+    bool isGenetated() {
+        return generated_;
+    }
+
+    void generate() {
+        if (OpenGL::vertexArraysSupported())
+            glGenVertexArrays(1, &VAO_);
+        glGenBuffers(1, &VBO_);
+        glGenBuffers(1, &EBO_);
+        generated_ = true;
+    }
+
+    GLuint VAO_;
 private:
     struct Triangle {
         GLuint a;

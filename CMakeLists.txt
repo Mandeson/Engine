@@ -38,8 +38,8 @@ endif()
 
 if ((CMAKE_SYSTEM_NAME STREQUAL "Linux") OR (CMAKE_SYSTEM_NAME STREQUAL "Windows") OR (CMAKE_SYSTEM_NAME STREQUAL "Darwin"))
     set(ENGINE_DESKTOP TRUE)
-    add_subdirectory(lib/Glad)
 endif()
+add_subdirectory(lib/Glad)
 add_subdirectory(lib/upng)
 
 if (NOT MSVC)

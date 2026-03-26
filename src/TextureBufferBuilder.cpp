@@ -20,15 +20,37 @@ void TextureBufferBuilder::addRectangle(Vector2<int16_t> pos, Vector2<int16_t> s
 }
 
 bool TextureBufferBuilder::bind(GLuint a_pos_location, GLuint a_tex_coord_location, GLuint usage) {
-    if(BufferBuilder::bind(usage)) { // if buffer is not empty
-        glVertexAttribPointer(a_pos_location, 2, GL_SHORT, GL_FALSE, sizeof(TextureBufferBuilderVertex),
-                reinterpret_cast<void *>(offsetof(TextureBufferBuilderVertex, pos)));
-        glEnableVertexAttribArray(a_pos_location);
-        glVertexAttribPointer(a_tex_coord_location, 2, GL_UNSIGNED_SHORT, GL_FALSE, sizeof(TextureBufferBuilderVertex),
-                reinterpret_cast<void *>(offsetof(TextureBufferBuilderVertex, tex_coord)));
-        glEnableVertexAttribArray(a_tex_coord_location);
+    bool bound = false;
+    if (!BufferBuilder::isGenetated()) {
+        BufferBuilder::generate();
+        if (OpenGL::vertexArraysSupported()) {
+            glBindVertexArray(VAO_);
+            BufferBuilder::rawBind();
+            bound = true;
+            setupAttribPointers(a_pos_location, a_tex_coord_location);
+        }
+    }
+    bound = BufferBuilder::update(bound, usage);
+    if(!BufferBuilder::empty()) {
+        if (OpenGL::vertexArraysSupported()) {
+            glBindVertexArray(VAO_);
+        } else {
+            if (!bound)
+                BufferBuilder::rawBind();
+            setupAttribPointers(a_pos_location, a_tex_coord_location);
+        }
+        
         return true;
     } else {
         return false;
     }
+}
+
+void TextureBufferBuilder::setupAttribPointers(GLuint a_pos_location, GLuint a_tex_coord_location) {
+    glVertexAttribPointer(a_pos_location, 2, GL_SHORT, GL_FALSE, sizeof(TextureBufferBuilderVertex),
+        reinterpret_cast<void *>(offsetof(TextureBufferBuilderVertex, pos)));
+    glEnableVertexAttribArray(a_pos_location);
+    glVertexAttribPointer(a_tex_coord_location, 2, GL_UNSIGNED_SHORT, GL_FALSE, sizeof(TextureBufferBuilderVertex),
+            reinterpret_cast<void *>(offsetof(TextureBufferBuilderVertex, tex_coord)));
+    glEnableVertexAttribArray(a_tex_coord_location);
 }

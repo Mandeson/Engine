@@ -7,8 +7,8 @@ void MapRenderer::FramebufferTexture::bind(PipelineState &pipeline_state) {
 }
 
 MapRenderer::MapRenderer(PipelineState &pipeline_state) : pipeline_state_(pipeline_state) {
-    OpenGL::glGenFramebuffersPtr(1, &FBO_);
-    OpenGL::glBindFramebufferPtr(GL_FRAMEBUFFER, FBO_);
+    glGenFramebuffers(1, &FBO_);
+    glBindFramebuffer(GL_FRAMEBUFFER, FBO_);
     glGenTextures(1, &framebuffer_texture_id_);
     pipeline_state_.bindTexture(framebuffer_texture_id_);
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
@@ -19,7 +19,7 @@ MapRenderer::MapRenderer(PipelineState &pipeline_state) : pipeline_state_(pipeli
 
 MapRenderer::~MapRenderer() {
     glDeleteTextures(1, &framebuffer_texture_id_);
-    OpenGL::glDeleteFramebuffersPtr(1, &FBO_);
+    glDeleteFramebuffers(1, &FBO_);
 }
 
 void MapRenderer::build(Vector2i size, int pixel_scale) {
@@ -33,21 +33,21 @@ void MapRenderer::build(Vector2i size, int pixel_scale) {
     pipeline_state_.bindTexture(framebuffer_texture_id_);
     glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB, framebuffer_size_.x, framebuffer_size_.y,
             0, GL_RGB, GL_UNSIGNED_BYTE, nullptr);
-    OpenGL::glBindFramebufferPtr(GL_FRAMEBUFFER, FBO_);
-    OpenGL::glFramebufferTexture2DPtr(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D, framebuffer_texture_id_, 0);
-    if (OpenGL::glCheckFramebufferStatusPtr(GL_FRAMEBUFFER) != GL_FRAMEBUFFER_COMPLETE) {
+    glBindFramebuffer(GL_FRAMEBUFFER, FBO_);
+    glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D, framebuffer_texture_id_, 0);
+    if (glCheckFramebufferStatus(GL_FRAMEBUFFER) != GL_FRAMEBUFFER_COMPLETE) {
         glDeleteTextures(1, &framebuffer_texture_id_);
-        OpenGL::glDeleteFramebuffersPtr(1, &FBO_);
+        glDeleteFramebuffers(1, &FBO_);
         throw std::runtime_error("Could not initialize an OpenGL Framebuffer");
     }
-    OpenGL::glBindFramebufferPtr(GL_FRAMEBUFFER, 0);
+    glBindFramebuffer(GL_FRAMEBUFFER, 0);
     screen_buffer_.clear();
     screen_buffer_.addRectangle({0, 0}, framebuffer_size_, TextureRect{{0, 0},framebuffer_size_ }, false, true);
     screen_buffer_.end();
 }
 
 void MapRenderer::renderFramebuffer(TextureRenderer &texture_renderer, Map &map, Vector2f camera_pos) {
-    OpenGL::glBindFramebufferPtr(GL_FRAMEBUFFER, FBO_);
+    glBindFramebuffer(GL_FRAMEBUFFER, FBO_);
     glViewport(0, 0, framebuffer_size_.x, framebuffer_size_.y);
     glClear(GL_COLOR_BUFFER_BIT);
     texture_renderer.getShader().use(pipeline_state_);
@@ -71,7 +71,7 @@ void MapRenderer::renderFramebuffer(TextureRenderer &texture_renderer, Map &map,
             }
         }
     }
-    OpenGL::glBindFramebufferPtr(GL_FRAMEBUFFER, 0);
+    glBindFramebuffer(GL_FRAMEBUFFER, 0);
     glViewport(0, 0, window_size_.x, window_size_.y);
 }
 

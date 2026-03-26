@@ -22,7 +22,7 @@ A multiplatform, data-driven 2D game engine written in C++ and scriptable in Lua
 ### Requirements
 * Graphics card compatible with one of the following:
   * OpenGL 3.0+
-  * OpenGL 2.1 with GL_EXT_framebuffer_object extension
+  * OpenGL 2.1 with GL_ARB_framebuffer_object extension
   * OpenGL ES 2.0
 
   The graphics API is detected automatically at launch.

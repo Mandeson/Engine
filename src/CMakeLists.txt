@@ -70,7 +70,7 @@ file(GLOB_RECURSE SOURCES "*.cpp")
 
 list(FILTER SOURCES EXCLUDE REGEX "platform/.*$")
 
-set(LIBRARIES upng glm::glm nlohmann_json::nlohmann_json)
+set(LIBRARIES glad upng glm::glm nlohmann_json::nlohmann_json)
 
 if (ENGINE_DESKTOP)
     if (CMAKE_SYSTEM_NAME STREQUAL "Linux")
@@ -97,7 +97,7 @@ if (ENGINE_DESKTOP)
         set(TARGET Game)
     endif()
     add_executable(${TARGET} ${SOURCES})
-    list(APPEND LIBRARIES glad glfw)
+    list(APPEND LIBRARIES glfw)
 elseif (CMAKE_SYSTEM_NAME STREQUAL "Android")
     find_package(game-activity REQUIRED CONFIG)
     set(CMAKE_SHARED_LINKER_FLAGS
