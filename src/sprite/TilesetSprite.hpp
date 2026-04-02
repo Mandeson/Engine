@@ -12,6 +12,8 @@ public:
     TilesetSprite(Tileset &tileset, Vector2<uint16_t> texture_pos, Vector2i size);
     bool ready();
     Tileset &getTileset();
+    TextureRect getTextureRect();
 private:
     Tileset &tileset_;
+    TextureRect texture_rect_;
 };

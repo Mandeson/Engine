@@ -1,9 +1,8 @@
 #include "Sprite.hpp"
 
-Sprite::Sprite(Texture &texture, TextureRect texture_rect) : texture_(texture) {
+Sprite::Sprite(Texture &texture, TextureRect texture_rect) : texture_(texture),
+        texture_rect_(texture_rect) {
     size_ = texture_rect.size;
-    buffer_builder_.addRectangle(Vector2{0, 0}, Vector2{1, 1}, texture_rect);
-    buffer_builder_.end();
 }
 
 bool Sprite::ready() {
@@ -17,3 +16,8 @@ Texture &Sprite::getTexture() {
 void Sprite::setSize(Vector2i size) {
     size_ = size;
 }
+
+TextureRect Sprite::getTextureRect() {
+    return texture_rect_;
+}
+

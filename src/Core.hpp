@@ -3,6 +3,7 @@
 #include "PipelineState.hpp"
 #include "TextManager.hpp"
 #include "ThreadPool.hpp"
+#include "renderer/SpriteRenderer.hpp"
 #include "renderer/TextRenderer.hpp"
 #include "sprite/TilesetSpriteManager.hpp"
 #include "sprite/SpriteManager.hpp"
@@ -43,6 +44,7 @@ private:
     TilesetSpriteManager tileset_sprite_manager_;
     SpriteManager sprite_manager_;
     TextManager text_manager_;
+    SpriteRenderer sprite_renderer_;
     std::optional<Map> map_;
     Vector2d camera_pos_;
 };

@@ -13,15 +13,10 @@ void Core::render(PipelineState &pipeline_state, TextRenderer &text_renderer, Te
     if (map_ && map_->ready()) {
         Vector2d &camera_pos = camera_pos_;
         world_renderer.renderMap(texture_renderer, *map_, camera_pos);
-        tileset_sprite_manager_.forEachObject([&world_renderer, &camera_pos] (TilesetSprite &sprite) {
-            world_renderer.renderTilesetSprite(sprite, camera_pos);
-        });
+        world_renderer.renderTilesetSprites(tileset_sprite_manager_, camera_pos);
     }
 
-    sprite_manager_.forEachObject([&pipeline_state, &texture_renderer, this] (Sprite &sprite) {
-        if (sprite.ready())
-            SpriteRenderer::render(texture_renderer, pipeline_state, window_size_, sprite);
-    });
+    sprite_renderer_.renderSprites(texture_renderer, pipeline_state, window_size_, sprite_manager_);
 
     text_manager_.forEachObject([&text_renderer] (TextObject &text_object) {
         text_renderer.render(text_object.getText(), text_object.getPos(), text_object.getColor());

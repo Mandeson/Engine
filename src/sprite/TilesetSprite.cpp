@@ -3,8 +3,7 @@
 TilesetSprite::TilesetSprite(Tileset &tileset, Vector2<uint16_t> texture_pos, Vector2i size)
         : tileset_(tileset) {
     size_ = size;
-    buffer_builder_.addRectangle(Vector2{0, 0}, size, TextureRect{texture_pos, size});
-    buffer_builder_.end();
+    texture_rect_ = TextureRect{texture_pos, size};
 }
 
 bool TilesetSprite::ready() {
@@ -13,4 +12,8 @@ bool TilesetSprite::ready() {
 
 Tileset &TilesetSprite::getTileset() {
     return tileset_;
+}
+
+TextureRect TilesetSprite::getTextureRect() {
+    return texture_rect_;
 }

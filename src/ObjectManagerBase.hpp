@@ -13,7 +13,7 @@ public:
         objects_.at(object_id).reset();
     }
 
-    void forEachObject(std::function<void(T &object_id)> func) {
+    void forEachObject(std::function<void(T &object)> func) {
         for (auto &object : objects_)
             if (object.has_value())
                 func(*object);

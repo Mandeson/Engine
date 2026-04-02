@@ -54,6 +54,7 @@ int Lua::Sprite::newS(lua_State *L) noexcept {
         const struct luaL_Reg methods[] = {
             {"setPos", setPos},
             {"setSize", setSize},
+            {"setDepth", setDepth},
             {"getPos", getPos},
             {"move", move},
             {"__gc", __gc},
@@ -78,6 +79,13 @@ int Lua::Sprite::setSize(lua_State *L) noexcept {
     auto sprite_lua_ptr = reinterpret_cast<SpriteLua *>(luaL_checkudata(L, 1, kLuaMetaTable));
     Vector2i size = Vector2{luaL_checkinteger(L, 2), luaL_checkinteger(L, 3)};
     EngineContext::core()->getSpriteManager().setSize(sprite_lua_ptr->sprite_id, size);
+    return 0;
+}
+
+int Lua::Sprite::setDepth(lua_State *L) noexcept {
+    auto sprite_lua_ptr = reinterpret_cast<SpriteLua *>(luaL_checkudata(L, 1, kLuaMetaTable));
+    double depth = luaL_checknumber(L, 2);
+    EngineContext::core()->getSpriteManager().setDepth(sprite_lua_ptr->sprite_id, depth);
     return 0;
 }
 

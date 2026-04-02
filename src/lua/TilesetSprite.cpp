@@ -34,6 +34,7 @@ int Lua::TilesetSprite::newS(lua_State *L) noexcept {
     if (luaL_newmetatable(L, kLuaMetaTable)) {
         const struct luaL_Reg methods[] = {
             {"setPos", setPos},
+            {"setDepth", setDepth},
             {"getPos", getPos},
             {"move", move},
             {"__gc", __gc},
@@ -60,6 +61,13 @@ int Lua::TilesetSprite::getPos(lua_State *L) noexcept {
     lua_pushnumber(L, pos.x);
     lua_pushnumber(L, pos.y);
     return 2;
+}
+
+int Lua::TilesetSprite::setDepth(lua_State *L) noexcept {
+    auto sprite_id = *reinterpret_cast<TilesetSpriteId *>(luaL_checkudata(L, 1, kLuaMetaTable));
+    double depth = luaL_checknumber(L, 2);
+    EngineContext::core()->getTilesetSpriteManager().setDepth(sprite_id, depth);
+    return 0;
 }
 
 int Lua::TilesetSprite::move(lua_State *L) noexcept {

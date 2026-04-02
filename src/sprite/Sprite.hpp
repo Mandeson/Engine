@@ -10,7 +10,9 @@ public:
     Sprite(Texture &texture, TextureRect texture_rect);
     bool ready();
     Texture &getTexture();
+    TextureRect getTextureRect();
     void setSize(Vector2i size);
 private:
     Texture &texture_;
+    TextureRect texture_rect_;
 };

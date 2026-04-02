@@ -42,28 +42,58 @@ void WorldRenderer::renderMap(TextureRenderer &texture_renderer, Map &map, Vecto
         Shader::setUniform2f(u_pos_location_, shift);
         Shader::setUniform1f(u_pixel_scale_location_, pixel_scale_);
         screen_buffer.render();
+        screen_buffer.unbind();
     }
 }
 
-void WorldRenderer::renderTilesetSprite(TilesetSprite &sprite, Vector2d camera_pos) {
-    auto &buffer = sprite.getBuffer();
-    if (buffer.bind(a_pos_location_, a_tex_coord_location_, GL_STATIC_DRAW)) {
-        auto &texture = sprite.getTileset().getTexture();
-        texture.bind(pipeline_state_);
-        shader_.use(pipeline_state_);
-        auto texture_size = texture.getSize();
-        Shader::setUniform2f(u_texture_size_location_, {
-            1 / static_cast<float>(texture_size.x),
-            1 / static_cast<float>(texture_size.y)
-        });
-        Shader::setUniform2f(u_pos_location_,
-                (static_cast<Vector2f>(sprite.getPos() - camera_pos) * sprite.getTileset().getTileSize() - sprite.getSize() / 2) * pixel_scale_
-                + window_size_ / 2);
-        Shader::setUniform1f(u_pixel_scale_location_, pixel_scale_);
-        buffer.render();
-    }
+void WorldRenderer::renderTilesetSprites(TilesetSpriteManager &manager, Vector2d camera_pos) {
+    size_t prev_quad_count = 0;
+    manager.forEachSpriteDepthSorted([&prev_quad_count, &camera_pos, this] (TilesetSprite &sprite) {
+        if (!sprite.ready())
+            return;
+        auto *new_texture = &sprite.getTileset().getTexture();
+        if (temp_render_units_.size() == 0) {
+            temp_render_units_.push_back(SpriteRenderUnit{.texture = *new_texture, .quad_offset = 0, .quad_count = 0});
+        } else if (new_texture != &temp_render_units_.back().texture) {
+            auto quad_count = temp_sprite_buffer_.getQuadCount();
+            temp_render_units_.back().quad_count = quad_count - prev_quad_count;
+            prev_quad_count = quad_count;
+            temp_render_units_.push_back(SpriteRenderUnit{.texture = *new_texture, .quad_offset = quad_count, .quad_count = 0});
+        }
+
+        auto tile_size = sprite.getTileset().getTileSize();
+        auto pos = (static_cast<Vector2f>(sprite.getPos() - camera_pos) * tile_size) * pixel_scale_ + window_size_ / 2;
+        // pos = pos * tile_size;
+        // pos = Vector2{round(pos.x), round(pos.y)};
+        // pos = pos / tile_size;
+        temp_sprite_buffer_.addRectangle(pos / pixel_scale_, sprite.getSize(), sprite.getTextureRect());
+    });
+    if (temp_render_units_.size() == 0)
+        return;
+    temp_render_units_.back().quad_count = temp_sprite_buffer_.getQuadCount() - prev_quad_count;
+    temp_sprite_buffer_.end();
+    for (const auto &unit : temp_render_units_)
+        renderSpriteUnit(unit);
+    temp_render_units_.clear();
+    temp_sprite_buffer_.clear();
 }
 
 int WorldRenderer::getPixelScale() {
     return pixel_scale_;
+}
+
+void WorldRenderer::renderSpriteUnit(const SpriteRenderUnit &unit) {
+    if (temp_sprite_buffer_.bind(a_pos_location_, a_tex_coord_location_, GL_STREAM_DRAW)) {
+        unit.texture.bind(pipeline_state_);
+        shader_.use(pipeline_state_);
+        auto texture_size = unit.texture.getSize();
+        Shader::setUniform2f(u_texture_size_location_, {
+            1 / static_cast<float>(texture_size.x),
+            1 / static_cast<float>(texture_size.y)
+        });
+        Shader::setUniform2f(u_pos_location_, Vector2{0, 0});
+        Shader::setUniform1f(u_pixel_scale_location_, pixel_scale_);
+        temp_sprite_buffer_.renderRange(unit.quad_offset, unit.quad_count);
+        temp_sprite_buffer_.unbind();
+    }
 }
