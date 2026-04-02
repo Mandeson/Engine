@@ -70,9 +70,8 @@ protected:
     bool update(GLenum usage = GL_DYNAMIC_DRAW) {
         bool bound = false;
         if (dirty_) {
-            // Log::dbg("Flushing buffer");
             size_t indices = indices_.size();
-            if (indices > allocated_indices_) {
+            if (indices > allocated_indices_ || (indices != 0 && usage != last_usage_)) {
                 if (OpenGL::vertexArraysSupported()) {
                     glBindVertexArray(VAO_);
                     rawBind();
@@ -84,6 +83,7 @@ protected:
                         reinterpret_cast<void *>(&vertices_[0]), usage);
                 glBufferData(GL_ELEMENT_ARRAY_BUFFER, indices * sizeof(Triangle),
                         reinterpret_cast<void *>(&indices_[0]), usage);
+                last_usage_ = usage;
                 allocated_indices_ = indices;
             } else if (indices != 0) {
                 if (OpenGL::vertexArraysSupported()) {
@@ -136,4 +136,5 @@ private:
     size_t render_elements_ = 0;
     GLuint VBO_;
     GLuint EBO_;
+    GLenum last_usage_ = GL_DYNAMIC_DRAW;
 };
