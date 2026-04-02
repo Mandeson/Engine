@@ -30,8 +30,22 @@ public:
         dirty_ = true;
     }
     void render() {
-        glDrawElements(GL_TRIANGLES, render_elements_, // A triangle has 3 vertices
-            GL_UNSIGNED_INT, 0);
+        glDrawElements(GL_TRIANGLES, render_elements_, GL_UNSIGNED_INT, 0);
+    }
+    void renderRange(size_t quad_offset, size_t quad_count) {
+        if (quad_count == 0)
+            return;
+        size_t indices_count = quad_count * 2 * 3;
+        size_t indices_offset = quad_offset * 2 * 3;
+        assert(indices_count + indices_offset <= render_elements_);
+        glDrawElements(GL_TRIANGLES, indices_count, GL_UNSIGNED_INT,
+                reinterpret_cast<void *>(indices_offset * sizeof(GLuint)));
+    }
+    size_t getQuadCount() {
+        return vertices_.size() / 4;
+    }
+    static void unbind() {
+        glBindVertexArray(0);
     }
 protected:
     void addQuad(const std::array<V, 4> &vertices) {
@@ -53,25 +67,32 @@ protected:
     }
 
     // Returns true if the buffer was bound during update
-    bool update(bool bound, GLenum usage = GL_DYNAMIC_DRAW) {
+    bool update(GLenum usage = GL_DYNAMIC_DRAW) {
+        bool bound = false;
         if (dirty_) {
-            Log::dbg("Flushing buffer");
+            // Log::dbg("Flushing buffer");
             size_t indices = indices_.size();
             if (indices > allocated_indices_) {
-                if (!bound) {
+                if (OpenGL::vertexArraysSupported()) {
+                    glBindVertexArray(VAO_);
                     rawBind();
-                    bound = true;
+                } else {
+                    rawBind();
                 }
+                bound = true;
                 glBufferData(GL_ARRAY_BUFFER, vertices_.size() * sizeof(V),
                         reinterpret_cast<void *>(&vertices_[0]), usage);
                 glBufferData(GL_ELEMENT_ARRAY_BUFFER, indices * sizeof(Triangle),
                         reinterpret_cast<void *>(&indices_[0]), usage);
                 allocated_indices_ = indices;
             } else if (indices != 0) {
-                if (!bound) {
+                if (OpenGL::vertexArraysSupported()) {
+                    glBindVertexArray(VAO_);
                     rawBind();
-                    bound = true;
+                } else {
+                    rawBind();
                 }
+                bound = true;
                 glBufferSubData(GL_ARRAY_BUFFER, 0, vertices_.size() * sizeof(V),
                         reinterpret_cast<void *>(&vertices_[0]));
                 glBufferSubData(GL_ELEMENT_ARRAY_BUFFER, 0, indices * sizeof(Triangle),
@@ -79,9 +100,7 @@ protected:
             }
             dirty_ = false;
             render_elements_ = indices * 3;
-            render_ready_ = true;
         }
-
         return bound;
     }
 
@@ -90,10 +109,13 @@ protected:
     }
 
     void generate() {
-        if (OpenGL::vertexArraysSupported())
-            glGenVertexArrays(1, &VAO_);
         glGenBuffers(1, &VBO_);
         glGenBuffers(1, &EBO_);
+        if (OpenGL::vertexArraysSupported()) {
+            glGenVertexArrays(1, &VAO_);
+            glBindVertexArray(VAO_);
+            rawBind();
+        }
         generated_ = true;
     }
 
@@ -107,7 +129,6 @@ private:
 
     bool generated_ = false;
     bool dirty_ = false;
-    bool render_ready_ = false;
     std::vector<V> vertices_;
     std::vector<Triangle> indices_;
     GLuint indice_index_ = 0;

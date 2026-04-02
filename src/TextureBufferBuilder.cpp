@@ -1,6 +1,7 @@
 #include "TextureBufferBuilder.hpp"
 #include "BufferBuilder.hpp"
 #include "OpenGL.hpp"
+#include <cstdint>
 
 void TextureBufferBuilder::addRectangle(Vector2<int16_t> pos, Vector2<int16_t> size, TextureRect texture_rect, bool horizontal_flip, bool vertical_flip) {
     auto pos_d = pos + size;
@@ -30,7 +31,8 @@ bool TextureBufferBuilder::bind(GLuint a_pos_location, GLuint a_tex_coord_locati
             setupAttribPointers(a_pos_location, a_tex_coord_location);
         }
     }
-    bound = BufferBuilder::update(bound, usage);
+
+    bound = BufferBuilder::update(usage);
     if(!BufferBuilder::empty()) {
         if (OpenGL::vertexArraysSupported()) {
             glBindVertexArray(VAO_);
@@ -52,5 +54,55 @@ void TextureBufferBuilder::setupAttribPointers(GLuint a_pos_location, GLuint a_t
     glEnableVertexAttribArray(a_pos_location);
     glVertexAttribPointer(a_tex_coord_location, 2, GL_UNSIGNED_SHORT, GL_FALSE, sizeof(TextureBufferBuilderVertex),
             reinterpret_cast<void *>(offsetof(TextureBufferBuilderVertex, tex_coord)));
+    glEnableVertexAttribArray(a_tex_coord_location);
+}
+
+void TextureBufferBuilderFloat::addRectangle(Vector2<float> pos, Vector2<int16_t> size, TextureRect texture_rect, bool horizontal_flip, bool vertical_flip) {
+    auto pos_d = pos + size;
+    auto tex_pos = texture_rect.pos;
+    Vector2<uint16_t> tex_pos_d = texture_rect.pos + texture_rect.size;
+    if (horizontal_flip)
+        std::swap(tex_pos.x, tex_pos_d.x);
+    if (vertical_flip)
+        std::swap(tex_pos.y, tex_pos_d.y);
+    std::array<TextureBufferBuilderFloatVertex, 4> vertices = {
+        TextureBufferBuilderFloatVertex{{pos.x,   pos.y  }, {tex_pos.x,   tex_pos.y  }},
+        TextureBufferBuilderFloatVertex{{pos_d.x, pos.y  }, {tex_pos_d.x, tex_pos.y  }},
+        TextureBufferBuilderFloatVertex{{pos_d.x, pos_d.y}, {tex_pos_d.x, tex_pos_d.y}},
+        TextureBufferBuilderFloatVertex{{pos.x,   pos_d.y}, {tex_pos.x,   tex_pos_d.y}}
+    };
+    addQuad(vertices);
+}
+
+bool TextureBufferBuilderFloat::bind(GLuint a_pos_location, GLuint a_tex_coord_location, GLuint usage) {
+    if (!BufferBuilder::isGenetated()) {
+        BufferBuilder::generate();
+        if (OpenGL::vertexArraysSupported()) {
+            setupAttribPointers(a_pos_location, a_tex_coord_location);
+        }
+    }
+    bool bound = BufferBuilder::update(usage);
+    if(!BufferBuilder::empty()) {
+        if (!bound) {
+            if (OpenGL::vertexArraysSupported()) {
+                glBindVertexArray(VAO_);
+            } else {
+                BufferBuilder::rawBind();
+                setupAttribPointers(a_pos_location, a_tex_coord_location);
+            }
+        }
+        
+        return true;
+    } else {
+        return false;
+    }
+}
+
+void TextureBufferBuilderFloat::setupAttribPointers(GLuint a_pos_location, GLuint a_tex_coord_location) {
+    glVertexAttribPointer(a_pos_location, 2, GL_FLOAT, GL_FALSE, sizeof(TextureBufferBuilderFloatVertex),
+        reinterpret_cast<void *>(offsetof(TextureBufferBuilderFloatVertex, pos)));
+    glEnableVertexAttribArray(a_pos_location);
+    glVertexAttribPointer(a_tex_coord_location, 2, GL_UNSIGNED_SHORT, GL_FALSE, sizeof(TextureBufferBuilderFloatVertex),
+            reinterpret_cast<void *>(offsetof(TextureBufferBuilderFloatVertex, tex_coord)));
     glEnableVertexAttribArray(a_tex_coord_location);
 }
