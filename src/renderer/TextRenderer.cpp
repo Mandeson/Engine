@@ -28,7 +28,7 @@ void TextRenderer::render(Text &text, Vector2f position, Color color) {
     for (size_t i = 0; i < units_count; i++) {
         auto &buffer = text.render_units_[i];
         if (buffer != nullptr) {
-            if (buffer->bind(a_pos_location_, a_tex_coord_location_)) { // if buffer is not empty
+            if (buffer->bind(a_pos_location_, a_tex_coord_location_, text.stream_draw_ ? GL_STREAM_DRAW : GL_DYNAMIC_DRAW)) { // if buffer is not empty
                 pipeline_state_.bindTexture(text.font_atlas_.getAtlasTextureId(i, pipeline_state_));
                 shader_.use(pipeline_state_);
                 Shader::setUniform1f(u_texture_size_location_, 1.0f / text.font_atlas_.getTextureSize());
@@ -36,6 +36,7 @@ void TextRenderer::render(Text &text, Vector2f position, Color color) {
                 Shader::setUniformColor(u_color_location_, color);
                 Shader::setUniform1f(u_scale_location_, text.scale_);
                 buffer->render();
+                buffer->unbind();
             }
         }
     }

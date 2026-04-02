@@ -67,6 +67,7 @@ void MapRenderer::renderFramebuffer(TextureRenderer &texture_renderer, Map &map,
                     texture.bind(pipeline_state_);
                     Shader::setUniform2f(locations.u_texture_size_location_, {1.0f / texture.getSize().x, 1.0f / texture.getSize().y});
                     buffer->render();
+                    buffer->unbind();
                 }
             }
         }
