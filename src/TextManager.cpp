@@ -23,12 +23,6 @@ Color TextObject::getColor() {
     return color_;
 }
 
-TextId TextManager::newObject(ThreadPool &thread_pool, Font &font, float font_size) {
-    TextId id = findEmptyOrCreate();
-    objects_[id].emplace(thread_pool, font, font_size);
-    return id;
-}
-
 TextObject &TextManager::getObject(TextId text_id) {
     return objects_.at(text_id).value().instance;
 }

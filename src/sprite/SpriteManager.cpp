@@ -2,12 +2,6 @@
 
 #include <algorithm>
 
-SpriteId SpriteManager::newObject(Texture &texture, TextureRect texture_rect) {
-    SpriteId id = findEmptyOrCreate();
-    objects_[id].emplace(texture, texture_rect);
-    return id;
-}
-
 bool SpriteManager::ready() {
     for (auto &sprite : objects_)
         if (sprite.has_value() && !sprite->instance.ready())

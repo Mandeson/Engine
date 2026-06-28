@@ -7,7 +7,6 @@ using SpriteId = int;
 
 class SpriteManager : public ObjectManagerBase<Sprite, SpriteId> {
 public:
-    SpriteId newObject(Texture &texture, TextureRect texture_rect);
     bool ready();
     void forEachSpriteDepthSorted(std::function<void(Sprite &sprite)> func);
     void setPos(SpriteId sprite_id, Vector2d pos);

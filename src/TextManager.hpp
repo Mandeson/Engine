@@ -33,6 +33,5 @@ public:
     TextManager(const TextManager &) = delete;
     TextManager& operator=(const TextManager&) = delete;
 
-    TextId newObject(ThreadPool &thread_pool, ::Font &font, float font_size);
     TextObject &getObject(TextId text_id);
 };
