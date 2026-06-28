@@ -52,6 +52,8 @@ int Lua::Sprite::newS(lua_State *L) noexcept {
     Log::dbg("sprite newS");
     if (luaL_newmetatable(L, kLuaMetaTable)) {
         const struct luaL_Reg methods[] = {
+            {"destroy", destroy},
+            {"setVisible", setVisible},
             {"setPos", setPos},
             {"setSize", setSize},
             {"setDepth", setDepth},
@@ -66,6 +68,20 @@ int Lua::Sprite::newS(lua_State *L) noexcept {
     }
     lua_setmetatable(L, -2);
     return 1;
+}
+
+int Lua::Sprite::destroy(lua_State *L) noexcept {
+    auto sprite_id_ptr = reinterpret_cast<SpriteId *>(luaL_checkudata(L, 1, kLuaMetaTable));
+    EngineContext::core()->getSpriteManager().destroyObject(*sprite_id_ptr);
+    *sprite_id_ptr = -1;
+    return 0;
+}
+
+int Lua::Sprite::setVisible(lua_State *L) noexcept {
+    auto sprite_id = *reinterpret_cast<SpriteId *>(luaL_checkudata(L, 1, kLuaMetaTable));
+    bool visible = static_cast<bool>(luaL_checkinteger(L, 2));
+    EngineContext::core()->getSpriteManager().setVisible(sprite_id, visible);
+    return 0;
 }
 
 int Lua::Sprite::setPos(lua_State *L) noexcept {
@@ -106,12 +122,6 @@ int Lua::Sprite::move(lua_State *L) noexcept {
 
 int Lua::Sprite::__gc(lua_State *L) noexcept {
     Log::dbg("sprite __gc");
-    auto sprite_lua_ptr = reinterpret_cast<SpriteLua *>(luaL_checkudata(L, 1, kLuaMetaTable));
-    EngineContext::core()->getSpriteManager().destroyObject(sprite_lua_ptr->sprite_id);
-    sprite_lua_ptr->sprite_id = -1;
-    if (sprite_lua_ptr->texture_lua_ref != LUA_NOREF) {
-        luaL_unref(L, LUA_REGISTRYINDEX, sprite_lua_ptr->texture_lua_ref);
-        sprite_lua_ptr->texture_lua_ref = LUA_NOREF;
-    }
+    destroy(L);
     return 0;
 }

@@ -33,6 +33,8 @@ int Lua::TilesetSprite::newS(lua_State *L) noexcept {
     Log::info("tileset sprite newS");
     if (luaL_newmetatable(L, kLuaMetaTable)) {
         const struct luaL_Reg methods[] = {
+            {"destroy", destroy},
+            {"setVisible", setVisible},
             {"setPos", setPos},
             {"setDepth", setDepth},
             {"getPos", getPos},
@@ -46,6 +48,20 @@ int Lua::TilesetSprite::newS(lua_State *L) noexcept {
     }
     lua_setmetatable(L, -2);
     return 1;
+}
+
+int Lua::TilesetSprite::destroy(lua_State *L) noexcept {
+    auto sprite_id_ptr = reinterpret_cast<TilesetSpriteId *>(luaL_checkudata(L, 1, kLuaMetaTable));
+    EngineContext::core()->getTilesetSpriteManager().destroyObject(*sprite_id_ptr);
+    *sprite_id_ptr = -1;
+    return 0;
+}
+
+int Lua::TilesetSprite::setVisible(lua_State *L) noexcept {
+    auto sprite_id = *reinterpret_cast<TilesetSpriteId *>(luaL_checkudata(L, 1, kLuaMetaTable));
+    bool visible = static_cast<bool>(luaL_checkinteger(L, 2));
+    EngineContext::core()->getTilesetSpriteManager().setVisible(sprite_id, visible);
+    return 0;
 }
 
 int Lua::TilesetSprite::setPos(lua_State *L) noexcept {
@@ -79,8 +95,6 @@ int Lua::TilesetSprite::move(lua_State *L) noexcept {
 
 int Lua::TilesetSprite::__gc(lua_State *L) noexcept {
     Log::info("tileset sprite __gc");
-    auto sprite_id_ptr = reinterpret_cast<TilesetSpriteId *>(luaL_checkudata(L, 1, kLuaMetaTable));
-    EngineContext::core()->getTilesetSpriteManager().destroyObject(*sprite_id_ptr);
-    *sprite_id_ptr = -1;
+    destroy(L);
     return 0;
 }

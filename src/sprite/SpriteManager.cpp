@@ -11,9 +11,11 @@ bool SpriteManager::ready() {
 }
 
 void SpriteManager::forEachSpriteDepthSorted(std::function<void(Sprite &sprite)> func) {
-    for (size_t index = 0; index < objects_.size(); index++)
-        if (objects_[index].has_value())
+    for (size_t index = 0; index < objects_.size(); index++) {
+        auto &sprite_opt = objects_[index];
+        if (sprite_opt.has_value() && sprite_opt->visible)
             temp_sort_.push_back(index);
+    }
 
     std::sort(temp_sort_.begin(), temp_sort_.end(), [this] (size_t a_index, size_t b_index) {
         return objects_.at(a_index).value().instance.getDepth()

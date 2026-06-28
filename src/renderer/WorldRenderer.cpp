@@ -48,7 +48,7 @@ void WorldRenderer::renderMap(TextureRenderer &texture_renderer, Map &map, Vecto
 
 void WorldRenderer::renderTilesetSprites(TilesetSpriteManager &manager, Vector2d camera_pos) {
     size_t prev_quad_count = 0;
-    manager.forEachSpriteDepthSorted([&prev_quad_count, &camera_pos, this] (TilesetSprite &sprite) {
+    manager.forEachVisibleSpriteDepthSorted([&prev_quad_count, &camera_pos, this] (TilesetSprite &sprite) {
         if (!sprite.ready())
             return;
         auto *new_texture = &sprite.getTileset().getTexture();
