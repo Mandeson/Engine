@@ -33,6 +33,6 @@ void TilesetSpriteManager::move(TilesetSpriteId sprite_id, Vector2d move) {
     sprite.setPos(res);
 }
 
-TilesetSprite TilesetSpriteManager::get(TilesetSpriteId sprite_id) {
+TilesetSprite &TilesetSpriteManager::get(TilesetSpriteId sprite_id) {
     return getObjectInstance(sprite_id);
 }

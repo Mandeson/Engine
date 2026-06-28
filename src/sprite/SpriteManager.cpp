@@ -33,6 +33,6 @@ void SpriteManager::move(SpriteId sprite_id, Vector2d move) {
     sprite.setPos(res);
 }
 
-Sprite SpriteManager::get(SpriteId sprite_id) {
+Sprite &SpriteManager::get(SpriteId sprite_id) {
     return getObjectInstance(sprite_id);
 }
