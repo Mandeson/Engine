@@ -14,6 +14,6 @@ varying vec2 texCoord;
 
 void main() {
    	gl_Position = vec4((uPos.x + aPos.x * uScale.x) / uWindowSize.x * 2.0 - 1.0,
-            -((uPos.y + aPos.y * uScale.x) / uWindowSize.y * 2.0 - 1.0), 0.0, 1.0);
+            -((uPos.y + aPos.y * uScale.y) / uWindowSize.y * 2.0 - 1.0), 0.0, 1.0);
    	texCoord = aTexCoord * uTextureSize;
 }
