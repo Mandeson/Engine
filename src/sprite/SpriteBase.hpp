@@ -4,6 +4,13 @@
 
 class SpriteBase {
 public:
+    SpriteBase() = default;
+    ~SpriteBase() = default;
+    SpriteBase(const SpriteBase &) = delete;
+    SpriteBase(SpriteBase &&) noexcept = default;
+    SpriteBase &operator=(const SpriteBase &) = delete;
+    SpriteBase &operator=(SpriteBase &&) = default;
+
     Vector2d getPos();
     Vector2i getSize();
     double getDepth();

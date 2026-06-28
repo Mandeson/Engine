@@ -7,6 +7,11 @@
 class WorldRenderer {
 public:
     WorldRenderer(PipelineState &pipeline_state, Vector2i window_size);
+
+    ~WorldRenderer() = default;
+    WorldRenderer(const WorldRenderer &) = delete;
+    WorldRenderer &operator=(const WorldRenderer &) = delete;
+
     void windowSize(Vector2i size);
     void renderMap(TextureRenderer &texture_renderer, Map &map, Vector2d camera_pos);
     void renderTilesetSprites(TilesetSpriteManager &manager, Vector2d camera_pos);

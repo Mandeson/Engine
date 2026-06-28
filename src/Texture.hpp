@@ -34,11 +34,11 @@ public:
     };
 
     Texture(ThreadPool &thread_pool, const std::string &filename, Filtering filtering = Filtering::kMipmapLinear);
+    ~Texture();
 
     Texture(const Texture &) = delete;
-    Texture& operator=(const Texture &) = delete;
+    Texture &operator=(const Texture &) = delete;
 
-    ~Texture();
     bool ready();
     Vector2i getSize();
     void bind(PipelineState &pipeline_state);

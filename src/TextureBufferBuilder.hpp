@@ -13,6 +13,11 @@ struct TextureBufferBuilderVertex {
 
 class TextureBufferBuilder : public BufferBuilder<TextureBufferBuilderVertex> {
 public:
+    TextureBufferBuilder() = default;
+    ~TextureBufferBuilder() = default;
+    TextureBufferBuilder(const TextureBufferBuilder &) = delete;
+    TextureBufferBuilder &operator=(const TextureBufferBuilder &) = delete;
+
     void addRectangle(Vector2<int16_t> pos, Vector2<int16_t> size, TextureRect texture_rect, bool horizontal_flip=false, bool vertical_flip=false);
     bool bind(GLuint a_pos_location, GLuint a_tex_coord_location, GLuint usage = GL_DYNAMIC_DRAW);
 private:
@@ -26,6 +31,11 @@ struct TextureBufferBuilderFloatVertex {
 
 class TextureBufferBuilderFloat : public BufferBuilder<TextureBufferBuilderFloatVertex> {
 public:
+    TextureBufferBuilderFloat() = default;
+    ~TextureBufferBuilderFloat() = default;
+    TextureBufferBuilderFloat(const TextureBufferBuilderFloat &) = delete;
+    TextureBufferBuilderFloat &operator=(const TextureBufferBuilderFloat &) = delete;
+
     void addRectangle(Vector2<float> pos, Vector2<int16_t> size, TextureRect texture_rect, bool horizontal_flip=false, bool vertical_flip=false);
     bool bind(GLuint a_pos_location, GLuint a_tex_coord_location, GLuint usage = GL_DYNAMIC_DRAW);
 private:

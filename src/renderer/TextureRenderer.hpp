@@ -14,6 +14,11 @@ public:
     };
 
     TextureRenderer();
+
+    ~TextureRenderer() = default;
+    TextureRenderer(const TextureRenderer &) = delete;
+    TextureRenderer &operator=(const TextureRenderer &) = delete;
+
     Shader &getShader();
     ShaderLocations &getShaderLocations();
 private:

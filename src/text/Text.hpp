@@ -20,13 +20,13 @@ public:
         kLeft,
         kCenter
     };
+
     Text(ThreadPool &thread_pool, Font &font, float font_size);
     Text(ThreadPool &thread_pool, Font &font, float font_size, const std::string &str, Alignment alignment = Alignment::kLeft, int max_width = INT_MAX);
-
-    Text(const Text &) = delete;
-    Text& operator=(const Text&) = delete;
-
     ~Text();
+    
+    Text(const Text &) = delete;
+    Text &operator=(const Text &) = delete;
 
     void setString(const std::string &str, Alignment alignment = Alignment::kLeft, int max_width = INT_MAX);
     void setScale(float scale);
@@ -40,7 +40,6 @@ private:
     float font_size_;
     std::wstring str_;
 
-    // Must use unique_ptr, because TextureBufferBuilder cannot be moved (it contains an atomic field)
     std::vector<std::unique_ptr<TextureBufferBuilder>> render_units_;
     
     std::mutex mutex_;

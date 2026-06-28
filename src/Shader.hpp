@@ -47,9 +47,11 @@ public:
      * Must be called from the opengl context thread
      */
     Shader(const std::string &name);
-    Shader(const Shader &) = delete;
-    Shader& operator=(const Shader &) = delete;
+    
     ~Shader();
+
+    Shader(const Shader &) = delete;
+    Shader &operator=(const Shader &) = delete;
 
     GLuint getAttribLocation(const char* name);
     GLuint getUniformLocation(const char* name);

@@ -31,7 +31,7 @@ public:
     FontAtlas(Font &font, float font_size);
 
     FontAtlas(const FontAtlas &) = delete;
-    FontAtlas& operator=(const FontAtlas&) = delete;
+    FontAtlas &operator=(const FontAtlas &) = delete;
 
     Glyph &getGlyph(wchar_t codepoint);
     GLuint getAtlasTextureId(int atlas_index, PipelineState &pipeline_state);

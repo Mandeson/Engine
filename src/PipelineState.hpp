@@ -4,6 +4,11 @@
 
 class PipelineState {
 public:
+    PipelineState() = default;
+    ~PipelineState() = default;
+    PipelineState(const PipelineState &) = delete;
+    PipelineState &operator=(const PipelineState &) = delete;
+
     void useShader(GLuint shader);
     void bindTexture(GLuint texture);
 private:

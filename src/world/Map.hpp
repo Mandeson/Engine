@@ -29,11 +29,10 @@ public:
     };
 
     Map(ThreadPool &thread_pool, TilesetManager &tileset_manager, const std::string &name);
+    ~Map();
 
     Map(const Map &) = delete;
-    Map& operator=(const Map &) = delete;
-
-    ~Map();
+    Map &operator=(const Map &) = delete;
 
     bool ready();
     int getTileSize();

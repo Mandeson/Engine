@@ -18,6 +18,10 @@ class Game {
 public:
     Game(Vector2i window_size, int monitor_height, float ui_scale, int random_seed);
     ~Game();
+
+    Game(const Game &) = delete;
+    Game &operator=(const Game &) = delete;
+
     void windowSize(Vector2i size);
     void render();
     void timeStep(double time);

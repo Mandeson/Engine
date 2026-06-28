@@ -8,6 +8,11 @@
 class TilesetManager {
 public:
     TilesetManager(ThreadPool &thread_pool);
+
+    ~TilesetManager() = default;
+    TilesetManager(const TilesetManager &) = delete;
+    TilesetManager &operator=(const TilesetManager &) = delete;
+
     Tileset &getTileset(const std::string &filename);
 private:
     ThreadPool &thread_pool_;

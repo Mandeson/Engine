@@ -20,6 +20,12 @@ public:
                 glDeleteVertexArrays(1, &VAO_);
         }
     }
+
+    BufferBuilder(const BufferBuilder &) = delete;
+    BufferBuilder(BufferBuilder &&) = default;
+    BufferBuilder &operator=(const BufferBuilder &) = delete;
+    BufferBuilder &operator=(BufferBuilder &&) = default;
+    
     void clear() {
         vertices_.clear();
         indices_.clear();

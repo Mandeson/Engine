@@ -7,6 +7,12 @@ using SpriteId = int;
 
 class SpriteManager : public ObjectManagerBase<Sprite, SpriteId> {
 public:
+    SpriteManager() = default;
+
+    ~SpriteManager() = default;
+    SpriteManager(const SpriteManager &) = delete;
+    SpriteManager &operator=(const SpriteManager &) = delete;
+
     bool ready();
     void forEachSpriteDepthSorted(std::function<void(Sprite &sprite)> func);
     void move(SpriteId sprite_id, Vector2d move);

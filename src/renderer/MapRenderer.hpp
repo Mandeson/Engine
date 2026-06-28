@@ -12,8 +12,13 @@ public:
         GLuint framebuffer_texture_id;
         void bind(PipelineState &pipeline_state);
     };
+    
     MapRenderer(PipelineState &pipeline_state);
     ~MapRenderer();
+
+    MapRenderer(const MapRenderer &) = delete;
+    MapRenderer &operator=(const MapRenderer &) = delete;
+
     void build(Vector2i size, int pixel_scale);
     void renderFramebuffer(TextureRenderer &texture_renderer, Map &map, Vector2f camera_pos);
     FramebufferTexture getFramebufferTexture();

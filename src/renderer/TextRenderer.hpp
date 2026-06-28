@@ -8,8 +8,9 @@ class TextRenderer {
 public:
     TextRenderer(PipelineState &pipeline_state, Vector2i window_size);
 
+    ~TextRenderer() = default;
     TextRenderer(const TextRenderer &) = delete;
-    TextRenderer& operator=(const TextRenderer&) = delete;
+    TextRenderer &operator=(const TextRenderer &) = delete;
 
     void windowSize(Vector2i size);
     void render(Text &text, Vector2f position, Color color = Color{255, 255, 255});

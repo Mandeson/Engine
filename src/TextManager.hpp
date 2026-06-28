@@ -11,6 +11,12 @@ using TextId = int;
 class TextObject {
 public:
     TextObject(ThreadPool &thread_pool, Font &font, float font_size);
+
+    ~TextObject() = default;
+    TextObject(const TextObject &) = delete;
+    TextObject(TextObject &&) = default;
+    TextObject &operator=(const TextObject &) = delete;
+    TextObject &operator=(TextObject &&) = default;
     
     Text &getText();
     void setPos(Vector2d pos);
@@ -18,10 +24,9 @@ public:
     Vector2d getPos();
     Color getColor();
 private:
-    // Must be a pointer, because the Text object uses multithreading and std::vector, which
+    // Must be a pointer, because the Text object uses multithreading. std::vector, which
     // is used in ObjectManagerBase can move data when reallocating.
-    // Cannot be unique_ptr, because classes containing unique_ptr cannot be stored in std::vector
-    std::shared_ptr<Text> text_;
+    std::unique_ptr<Text> text_;
     Vector2d pos_ = {0.0, 0.0};
     Color color_ = {255, 255, 255};
 };
@@ -30,8 +35,9 @@ class TextManager : public ObjectManagerBase<TextObject, TextId> {
 public:
     TextManager() = default;
 
+    ~TextManager() = default;
     TextManager(const TextManager &) = delete;
-    TextManager& operator=(const TextManager&) = delete;
+    TextManager &operator=(const TextManager &) = delete;
 
     TextObject &get(TextId text_id);
 };

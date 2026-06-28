@@ -9,8 +9,9 @@ class Tileset {
 public:
     Tileset(ThreadPool &thread_pool, const std::string &filename);
 
+    ~Tileset() = default;
     Tileset(const Tileset &) = delete;
-    Tileset& operator=(const Tileset &) = delete;
+    Tileset &operator=(const Tileset &) = delete;
 
     bool ready();
     int getTileSize() const;

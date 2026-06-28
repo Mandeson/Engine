@@ -18,6 +18,11 @@
 class Core {
 public:
     Core(ThreadPool &thread_pool, Font &default_font_, Vector2i window_size);
+
+    ~Core() = default;
+    Core(const Core &) = delete;
+    Core &operator=(const Core &) = delete;
+
     void windowSize(Vector2i window_size);
     void render(PipelineState &pipeline_state, TextRenderer &text_renderer, TextureRenderer &texture_renderer, WorldRenderer &world_renderer);
     void keyPressed(const std::string &key);

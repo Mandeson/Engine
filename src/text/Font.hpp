@@ -24,11 +24,11 @@ public:
     };
 
     Font(const char *filename);
+    ~Font();
 
     Font(const Font &) = delete;
-    Font& operator=(const Font&) = delete;
+    Font &operator=(const Font &) = delete;
 
-    ~Font();
     FontAtlas &getAtlas(float font_size);
 private:
     static void add();

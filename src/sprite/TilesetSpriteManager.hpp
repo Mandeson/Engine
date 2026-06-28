@@ -7,6 +7,11 @@ using TilesetSpriteId = int;
 
 class TilesetSpriteManager : public ObjectManagerBase<TilesetSprite, TilesetSpriteId> {
 public:
+    TilesetSpriteManager() = default;
+    ~TilesetSpriteManager() = default;
+    TilesetSpriteManager(const TilesetSpriteManager &) = delete;
+    TilesetSpriteManager &operator=(const TilesetSpriteManager &) = delete;
+
     bool ready();
     void forEachVisibleSpriteDepthSorted(std::function<void(TilesetSprite &sprite)> func);
     void move(TilesetSpriteId sprite_id, Vector2d move);

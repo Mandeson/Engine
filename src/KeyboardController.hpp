@@ -5,6 +5,11 @@
 
 class KeyboardController {
 public:
+    KeyboardController() = default;
+    ~KeyboardController() = default;
+    KeyboardController(const KeyboardController &) = delete;
+    KeyboardController &operator=(const KeyboardController &) = delete;
+
     void keyPressed(const std::string &key);
     void keyReleased(const std::string &key);
     bool isKeyPressed(const std::string &key);

@@ -9,6 +9,11 @@
 template <typename T, typename I>
 class ObjectManagerBase {
 public:
+    ObjectManagerBase() = default;
+    ~ObjectManagerBase() = default;
+    ObjectManagerBase(const ObjectManagerBase &) = delete;
+    ObjectManagerBase &operator=(const ObjectManagerBase &) = delete;
+
     class ObjectNotFoundException { };
 
     template<typename... Args>

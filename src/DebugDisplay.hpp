@@ -8,6 +8,11 @@
 class DebugDisplay {
 public:
     DebugDisplay(ThreadPool &thread_pool, Font &font, float ui_scale);
+
+    ~DebugDisplay() = default;
+    DebugDisplay(const DebugDisplay &) = delete;
+    DebugDisplay &operator=(const DebugDisplay &) = delete;
+
     void timeStep(double time);
     void render(TextRenderer &text_renderer);
 private:

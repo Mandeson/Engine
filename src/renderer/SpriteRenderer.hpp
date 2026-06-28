@@ -6,6 +6,11 @@
 
 class SpriteRenderer {
 public:
+    SpriteRenderer() = default;
+    ~SpriteRenderer() = default;
+    SpriteRenderer(const SpriteRenderer &) = delete;
+    SpriteRenderer &operator=(const SpriteRenderer &) = delete;
+
     void renderSprites(TextureRenderer &texture_renderer, PipelineState &pipeline_state,
             Vector2i window_size, SpriteManager &manager);
 private:
