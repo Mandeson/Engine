@@ -103,7 +103,7 @@ int Lua::Text::setString(lua_State *L) noexcept {
         return 0;
     }
     const char *str = luaL_checkstring(L, 2);
-    EngineContext::core()->getTextManager().getObject(text_lua_ptr->text_id).getText().setString(str);
+    EngineContext::core()->getTextManager().get(text_lua_ptr->text_id).getText().setString(str);
     return 0;
 }
 
@@ -114,7 +114,7 @@ int Lua::Text::setScale(lua_State *L) noexcept {
         return 0;
     }
     auto scale = luaL_checknumber(L, 2);
-    EngineContext::core()->getTextManager().getObject(text_lua_ptr->text_id).getText()
+    EngineContext::core()->getTextManager().get(text_lua_ptr->text_id).getText()
             .setScale(static_cast<float>(scale));
     return 0;
 }
@@ -126,7 +126,7 @@ int Lua::Text::setPos(lua_State *L) noexcept {
         return 0;
     }
     Vector2d pos = Vector2{luaL_checknumber(L, 2), luaL_checknumber(L, 3)};
-    EngineContext::core()->getTextManager().getObject(text_lua_ptr->text_id).setPos(pos);
+    EngineContext::core()->getTextManager().get(text_lua_ptr->text_id).setPos(pos);
     return 0;
 }
 
@@ -140,7 +140,7 @@ int Lua::Text::setColor(lua_State *L) noexcept {
         static_cast<uint8_t>(luaL_checkinteger(L, 2)),
         static_cast<uint8_t>(luaL_checkinteger(L, 3)),
         static_cast<uint8_t>(luaL_checkinteger(L, 4))};
-    EngineContext::core()->getTextManager().getObject(text_lua_ptr->text_id).setColor(color);
+    EngineContext::core()->getTextManager().get(text_lua_ptr->text_id).setColor(color);
     return 0;
 }
 

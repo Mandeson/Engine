@@ -27,24 +27,12 @@ void SpriteManager::forEachSpriteDepthSorted(std::function<void(Sprite &sprite)>
     temp_sort_.clear();
 }
 
-void SpriteManager::setPos(SpriteId sprite_id, Vector2d pos) {
-    getObjectInstance(sprite_id).setPos(pos);
-}
-
-void SpriteManager::setSize(SpriteId sprite_id, Vector2i size) {
-    getObjectInstance(sprite_id).setSize(size);
-}
-
-void SpriteManager::setDepth(SpriteId sprite_id, double depth) {
-    getObjectInstance(sprite_id).setDepth(depth);
-}
-
-Vector2d SpriteManager::getPos(SpriteId sprite_id) {
-    return getObjectInstance(sprite_id).getPos();
-}
-
 void SpriteManager::move(SpriteId sprite_id, Vector2d move) {
     auto &sprite = getObjectInstance(sprite_id);
     auto res = sprite.getPos() + move;
     sprite.setPos(res);
+}
+
+Sprite SpriteManager::get(SpriteId sprite_id) {
+    return getObjectInstance(sprite_id);
 }

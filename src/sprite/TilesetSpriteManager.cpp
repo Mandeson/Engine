@@ -27,20 +27,12 @@ void TilesetSpriteManager::forEachVisibleSpriteDepthSorted(std::function<void(Ti
     temp_sort_.clear();
 }
 
-void TilesetSpriteManager::setPos(TilesetSpriteId sprite_id, Vector2d pos) {
-    getObjectInstance(sprite_id).setPos(pos);
-}
-
-void TilesetSpriteManager::setDepth(TilesetSpriteId sprite_id, double depth) {
-    getObjectInstance(sprite_id).setDepth(depth);
-}
-
-Vector2d TilesetSpriteManager::getPos(TilesetSpriteId sprite_id) {
-    return getObjectInstance(sprite_id).getPos();
-}
-
 void TilesetSpriteManager::move(TilesetSpriteId sprite_id, Vector2d move) {
     auto &sprite = getObjectInstance(sprite_id);
     auto res = sprite.getPos() + move;
     sprite.setPos(res);
+}
+
+TilesetSprite TilesetSpriteManager::get(TilesetSpriteId sprite_id) {
+    return getObjectInstance(sprite_id);
 }

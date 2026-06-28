@@ -23,6 +23,6 @@ Color TextObject::getColor() {
     return color_;
 }
 
-TextObject &TextManager::getObject(TextId text_id) {
+TextObject &TextManager::get(TextId text_id) {
     return getObjectInstance(text_id);
 }

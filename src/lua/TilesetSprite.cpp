@@ -83,7 +83,7 @@ int Lua::TilesetSprite::setPos(lua_State *L) noexcept {
         return 0;
     }
     Vector2d pos = Vector2{luaL_checknumber(L, 2), luaL_checknumber(L, 3)};
-    EngineContext::core()->getTilesetSpriteManager().setPos(sprite_id, pos);
+    EngineContext::core()->getTilesetSpriteManager().get(sprite_id).setPos(pos);
     return 0;
 }
 
@@ -93,7 +93,7 @@ int Lua::TilesetSprite::getPos(lua_State *L) noexcept {
         destroyedObjectWarn(L, "getPos");
         return 0;
     }
-    Vector2d pos = EngineContext::core()->getTilesetSpriteManager().getPos(sprite_id);
+    Vector2d pos = EngineContext::core()->getTilesetSpriteManager().get(sprite_id).getPos();
     lua_pushnumber(L, pos.x);
     lua_pushnumber(L, pos.y);
     return 2;
@@ -106,7 +106,7 @@ int Lua::TilesetSprite::setDepth(lua_State *L) noexcept {
         return 0;
     }
     double depth = luaL_checknumber(L, 2);
-    EngineContext::core()->getTilesetSpriteManager().setDepth(sprite_id, depth);
+    EngineContext::core()->getTilesetSpriteManager().get(sprite_id).setDepth(depth);
     return 0;
 }
 

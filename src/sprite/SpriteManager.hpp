@@ -9,11 +9,8 @@ class SpriteManager : public ObjectManagerBase<Sprite, SpriteId> {
 public:
     bool ready();
     void forEachSpriteDepthSorted(std::function<void(Sprite &sprite)> func);
-    void setPos(SpriteId sprite_id, Vector2d pos);
-    void setSize(SpriteId sprite_id, Vector2i size);
-    void setDepth(SpriteId sprite_id, double depth);
-    Vector2d getPos(SpriteId sprite_id);
     void move(SpriteId sprite_id, Vector2d move);
+    Sprite get(SpriteId sprite_id);
 private:
     std::vector<size_t> temp_sort_;
 };

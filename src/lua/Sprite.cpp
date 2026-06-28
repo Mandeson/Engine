@@ -106,7 +106,7 @@ int Lua::Sprite::setPos(lua_State *L) noexcept {
         return 0;
     }
     Vector2d pos = Vector2{luaL_checknumber(L, 2), luaL_checknumber(L, 3)};
-    EngineContext::core()->getSpriteManager().setPos(sprite_lua_ptr->sprite_id, pos);
+    EngineContext::core()->getSpriteManager().get(sprite_lua_ptr->sprite_id).setPos(pos);
     return 0;
 }
 
@@ -117,7 +117,7 @@ int Lua::Sprite::setSize(lua_State *L) noexcept {
         return 0;
     }
     Vector2i size = Vector2{luaL_checkinteger(L, 2), luaL_checkinteger(L, 3)};
-    EngineContext::core()->getSpriteManager().setSize(sprite_lua_ptr->sprite_id, size);
+    EngineContext::core()->getSpriteManager().get(sprite_lua_ptr->sprite_id).setSize(size);
     return 0;
 }
 
@@ -128,7 +128,7 @@ int Lua::Sprite::setDepth(lua_State *L) noexcept {
         return 0;
     }
     double depth = luaL_checknumber(L, 2);
-    EngineContext::core()->getSpriteManager().setDepth(sprite_lua_ptr->sprite_id, depth);
+    EngineContext::core()->getSpriteManager().get(sprite_lua_ptr->sprite_id).setDepth(depth);
     return 0;
 }
 
@@ -138,7 +138,7 @@ int Lua::Sprite::getPos(lua_State *L) noexcept {
         destroyedObjectWarn(L, "getPos");
         return 0;
     }
-    Vector2d pos = EngineContext::core()->getSpriteManager().getPos(sprite_lua_ptr->sprite_id);
+    Vector2d pos = EngineContext::core()->getSpriteManager().get(sprite_lua_ptr->sprite_id).getPos();
     lua_pushnumber(L, pos.x);
     lua_pushnumber(L, pos.y);
     return 2;

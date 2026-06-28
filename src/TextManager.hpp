@@ -33,5 +33,5 @@ public:
     TextManager(const TextManager &) = delete;
     TextManager& operator=(const TextManager&) = delete;
 
-    TextObject &getObject(TextId text_id);
+    TextObject &get(TextId text_id);
 };
