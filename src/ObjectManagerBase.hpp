@@ -13,12 +13,24 @@ public:
         objects_.at(object_id).reset();
     }
 
-    void forEachObject(std::function<void(T &object)> func) {
+    void setVisible(I object_id, bool visible) {
+        objects_.at(object_id).value().visible = visible;
+    }
+
+    void forEachVisibleObject(std::function<void(T &object)> func) {
         for (auto &object : objects_)
-            if (object.has_value())
-                func(*object);
+            if (object.has_value() && (*object).visible)
+                func((*object).instance);
     }
 protected:
+    struct Object {
+        T instance;
+        bool visible = true;
+
+        template<typename... Args>
+        Object(Args&&... __args) : instance(std::forward<Args>(__args)...) { }
+    };
+
     I findEmptyOrCreate() {
         for (size_t object_id = 0; object_id < objects_.size(); object_id++) {
             auto &object = objects_[object_id];
@@ -30,5 +42,5 @@ protected:
         return objects_.size() - 1; // Return the last, newly added element
     }
 
-    std::vector<std::optional<T>> objects_;
+    std::vector<std::optional<Object>> objects_;
 };

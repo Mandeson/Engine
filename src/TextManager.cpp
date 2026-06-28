@@ -30,5 +30,5 @@ TextId TextManager::newObject(ThreadPool &thread_pool, Font &font, float font_si
 }
 
 TextObject &TextManager::getObject(TextId text_id) {
-    return objects_.at(text_id).value();
+    return objects_.at(text_id).value().instance;
 }

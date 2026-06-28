@@ -8,6 +8,8 @@ constexpr const char *kLuaMetaTable = "Text";
 
 void registerLua(lua_State *L);
 int newS(lua_State *L) noexcept;
+int destroy(lua_State *L) noexcept;
+int setVisible(lua_State *L) noexcept;
 int setString(lua_State *L) noexcept;
 int setScale(lua_State *L) noexcept;
 int setPos(lua_State *L) noexcept;

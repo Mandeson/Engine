@@ -18,7 +18,7 @@ void Core::render(PipelineState &pipeline_state, TextRenderer &text_renderer, Te
 
     sprite_renderer_.renderSprites(texture_renderer, pipeline_state, window_size_, sprite_manager_);
 
-    text_manager_.forEachObject([&text_renderer] (TextObject &text_object) {
+    text_manager_.forEachVisibleObject([&text_renderer] (TextObject &text_object) {
         text_renderer.render(text_object.getText(), text_object.getPos(), text_object.getColor());
     });
 }

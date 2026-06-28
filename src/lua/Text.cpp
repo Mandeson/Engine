@@ -12,7 +12,6 @@ void Lua::Text::registerLua(lua_State *L) {
     luaL_newmetatable(L, kLuaStaticMetaTable);
     const struct luaL_Reg funcs[] = {
         {"new", newS},
-        //{"getDefault", getDefaultS},
         {nullptr, nullptr}
     };
     luaL_setfuncs(L, funcs, 0);
@@ -50,6 +49,8 @@ int Lua::Text::newS(lua_State *L) noexcept {
     Log::dbg("text newS");
     if (luaL_newmetatable(L, kLuaMetaTable)) {
         const struct luaL_Reg methods[] = {
+            {"destroy", destroy},
+            {"setVisible", setVisible},
             {"setString", setString},
             {"setScale", setScale},
             {"setPos", setPos},
@@ -63,6 +64,26 @@ int Lua::Text::newS(lua_State *L) noexcept {
     }
     lua_setmetatable(L, -2);
     return 1;
+}
+
+int Lua::Text::destroy(lua_State *L) noexcept {
+    auto *text_lua_ptr = reinterpret_cast<TextLua *>(luaL_checkudata(L, 1, kLuaMetaTable));
+    if (text_lua_ptr->text_id != -1) {
+        EngineContext::core()->getTextManager().destroyObject(text_lua_ptr->text_id);
+        text_lua_ptr->text_id = -1;
+        if (text_lua_ptr->font_lua_ref != LUA_NOREF) {
+            luaL_unref(L, LUA_REGISTRYINDEX, text_lua_ptr->font_lua_ref);
+            text_lua_ptr->font_lua_ref = LUA_NOREF;
+        }
+    }
+    return 0;
+}
+
+int Lua::Text::setVisible(lua_State *L) noexcept {
+    auto text_lua_ptr = reinterpret_cast<TextLua *>(luaL_checkudata(L, 1, kLuaMetaTable));
+    bool visible = static_cast<bool>(luaL_checkinteger(L, 2));
+    EngineContext::core()->getTextManager().setVisible(text_lua_ptr->text_id, visible);
+    return 0;
 }
 
 int Lua::Text::setString(lua_State *L) noexcept {
@@ -99,12 +120,6 @@ int Lua::Text::setColor(lua_State *L) noexcept {
 
 int Lua::Text::__gc(lua_State *L) noexcept {
     Log::dbg("text __gc");
-    auto *text_lua_ptr = reinterpret_cast<TextLua *>(luaL_checkudata(L, 1, kLuaMetaTable));
-    EngineContext::core()->getTextManager().destroyObject(text_lua_ptr->text_id);
-    text_lua_ptr->text_id = -1;
-    if (text_lua_ptr->font_lua_ref != LUA_NOREF) {
-        luaL_unref(L, LUA_REGISTRYINDEX, text_lua_ptr->font_lua_ref);
-        text_lua_ptr->font_lua_ref = LUA_NOREF;
-    }
+    destroy(L);
     return 0;
 }
