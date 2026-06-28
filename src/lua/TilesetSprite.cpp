@@ -1,7 +1,13 @@
 #include "TilesetSprite.hpp"
+#include <cstdint>
 #include "../util/Logger.hpp"
 #include "../EngineContext.hpp"
-#include <cstdint>
+#include "Common.hpp"
+
+static void destroyedObjectWarn(lua_State *L, std::string_view method_name) {
+    auto str = Lua::Common::methodCallOnDestroyedObjectErrorText("TilesetSprite", method_name);
+    luaL_error(L, str.c_str());
+}
 
 void Lua::TilesetSprite::registerLua(lua_State *L) {
     luaL_newmetatable(L, kLuaStaticMetaTable);
@@ -52,6 +58,8 @@ int Lua::TilesetSprite::newS(lua_State *L) noexcept {
 
 int Lua::TilesetSprite::destroy(lua_State *L) noexcept {
     auto sprite_id_ptr = reinterpret_cast<TilesetSpriteId *>(luaL_checkudata(L, 1, kLuaMetaTable));
+    if (*sprite_id_ptr == -1)
+        return 0;
     EngineContext::core()->getTilesetSpriteManager().destroyObject(*sprite_id_ptr);
     *sprite_id_ptr = -1;
     return 0;
@@ -59,6 +67,10 @@ int Lua::TilesetSprite::destroy(lua_State *L) noexcept {
 
 int Lua::TilesetSprite::setVisible(lua_State *L) noexcept {
     auto sprite_id = *reinterpret_cast<TilesetSpriteId *>(luaL_checkudata(L, 1, kLuaMetaTable));
+    if (sprite_id == -1) {
+        destroyedObjectWarn(L, "setVisible");
+        return 0;
+    }
     bool visible = static_cast<bool>(luaL_checkinteger(L, 2));
     EngineContext::core()->getTilesetSpriteManager().setVisible(sprite_id, visible);
     return 0;
@@ -66,6 +78,10 @@ int Lua::TilesetSprite::setVisible(lua_State *L) noexcept {
 
 int Lua::TilesetSprite::setPos(lua_State *L) noexcept {
     auto sprite_id = *reinterpret_cast<TilesetSpriteId *>(luaL_checkudata(L, 1, kLuaMetaTable));
+    if (sprite_id == -1) {
+        destroyedObjectWarn(L, "setPos");
+        return 0;
+    }
     Vector2d pos = Vector2{luaL_checknumber(L, 2), luaL_checknumber(L, 3)};
     EngineContext::core()->getTilesetSpriteManager().setPos(sprite_id, pos);
     return 0;
@@ -73,6 +89,10 @@ int Lua::TilesetSprite::setPos(lua_State *L) noexcept {
 
 int Lua::TilesetSprite::getPos(lua_State *L) noexcept {
     auto sprite_id = *reinterpret_cast<TilesetSpriteId *>(luaL_checkudata(L, 1, kLuaMetaTable));
+    if (sprite_id == -1) {
+        destroyedObjectWarn(L, "getPos");
+        return 0;
+    }
     Vector2d pos = EngineContext::core()->getTilesetSpriteManager().getPos(sprite_id);
     lua_pushnumber(L, pos.x);
     lua_pushnumber(L, pos.y);
@@ -81,6 +101,10 @@ int Lua::TilesetSprite::getPos(lua_State *L) noexcept {
 
 int Lua::TilesetSprite::setDepth(lua_State *L) noexcept {
     auto sprite_id = *reinterpret_cast<TilesetSpriteId *>(luaL_checkudata(L, 1, kLuaMetaTable));
+    if (sprite_id == -1) {
+        destroyedObjectWarn(L, "setDepth");
+        return 0;
+    }
     double depth = luaL_checknumber(L, 2);
     EngineContext::core()->getTilesetSpriteManager().setDepth(sprite_id, depth);
     return 0;
@@ -88,6 +112,10 @@ int Lua::TilesetSprite::setDepth(lua_State *L) noexcept {
 
 int Lua::TilesetSprite::move(lua_State *L) noexcept {
     auto sprite_id = *reinterpret_cast<TilesetSpriteId *>(luaL_checkudata(L, 1, kLuaMetaTable));
+    if (sprite_id == -1) {
+        destroyedObjectWarn(L, "move");
+        return 0;
+    }
     Vector2d move = Vector2{luaL_checknumber(L, 2), luaL_checknumber(L, 3)};
     EngineContext::core()->getTilesetSpriteManager().move(sprite_id, move);
     return 0;

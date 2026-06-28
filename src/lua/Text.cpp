@@ -1,12 +1,18 @@
 #include "Text.hpp"
 #include "../util/Logger.hpp"
 #include "../EngineContext.hpp"
+#include "Common.hpp"
 #include "Font.hpp"
 
 struct TextLua {
     TextId text_id = -1;
     int font_lua_ref = LUA_NOREF; // Lua reference to the associated Font object
 };
+
+static void destroyedObjectError(lua_State *L, std::string_view method_name) {
+    auto str = Lua::Common::methodCallOnDestroyedObjectErrorText("Text", method_name);
+    luaL_error(L, str.c_str());
+}
 
 void Lua::Text::registerLua(lua_State *L) {
     luaL_newmetatable(L, kLuaStaticMetaTable);
@@ -81,6 +87,10 @@ int Lua::Text::destroy(lua_State *L) noexcept {
 
 int Lua::Text::setVisible(lua_State *L) noexcept {
     auto text_lua_ptr = reinterpret_cast<TextLua *>(luaL_checkudata(L, 1, kLuaMetaTable));
+    if (text_lua_ptr->text_id == -1) {
+        destroyedObjectError(L, "setVisible");
+        return 0;
+    }
     bool visible = static_cast<bool>(luaL_checkinteger(L, 2));
     EngineContext::core()->getTextManager().setVisible(text_lua_ptr->text_id, visible);
     return 0;
@@ -88,6 +98,10 @@ int Lua::Text::setVisible(lua_State *L) noexcept {
 
 int Lua::Text::setString(lua_State *L) noexcept {
     auto text_lua_ptr = reinterpret_cast<TextLua *>(luaL_checkudata(L, 1, kLuaMetaTable));
+    if (text_lua_ptr->text_id == -1) {
+        destroyedObjectError(L, "setString");
+        return 0;
+    }
     const char *str = luaL_checkstring(L, 2);
     EngineContext::core()->getTextManager().getObject(text_lua_ptr->text_id).getText().setString(str);
     return 0;
@@ -95,6 +109,10 @@ int Lua::Text::setString(lua_State *L) noexcept {
 
 int Lua::Text::setScale(lua_State *L) noexcept {
     auto text_lua_ptr = reinterpret_cast<TextLua *>(luaL_checkudata(L, 1, kLuaMetaTable));
+    if (text_lua_ptr->text_id == -1) {
+        destroyedObjectError(L, "setScale");
+        return 0;
+    }
     auto scale = luaL_checknumber(L, 2);
     EngineContext::core()->getTextManager().getObject(text_lua_ptr->text_id).getText()
             .setScale(static_cast<float>(scale));
@@ -103,6 +121,10 @@ int Lua::Text::setScale(lua_State *L) noexcept {
 
 int Lua::Text::setPos(lua_State *L) noexcept {
     auto text_lua_ptr = reinterpret_cast<TextLua *>(luaL_checkudata(L, 1, kLuaMetaTable));
+    if (text_lua_ptr->text_id == -1) {
+        destroyedObjectError(L, "setPos");
+        return 0;
+    }
     Vector2d pos = Vector2{luaL_checknumber(L, 2), luaL_checknumber(L, 3)};
     EngineContext::core()->getTextManager().getObject(text_lua_ptr->text_id).setPos(pos);
     return 0;
@@ -110,6 +132,10 @@ int Lua::Text::setPos(lua_State *L) noexcept {
 
 int Lua::Text::setColor(lua_State *L) noexcept {
     auto text_lua_ptr = reinterpret_cast<TextLua *>(luaL_checkudata(L, 1, kLuaMetaTable));
+    if (text_lua_ptr->text_id == -1) {
+        destroyedObjectError(L, "setColor");
+        return 0;
+    }
     Color color = {
         static_cast<uint8_t>(luaL_checkinteger(L, 2)),
         static_cast<uint8_t>(luaL_checkinteger(L, 3)),

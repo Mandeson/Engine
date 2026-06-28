@@ -9,6 +9,8 @@
 template <typename T, typename I>
 class ObjectManagerBase {
 public:
+    class ObjectNotFoundException { };
+
     template<typename... Args>
     I newObject(Args&&... __args) {
         I id = findEmptyOrCreate();
@@ -17,11 +19,11 @@ public:
     }
 
     void destroyObject(I object_id) {
-        objects_.at(object_id).reset();
+        objects_[object_id].reset();
     }
 
     void setVisible(I object_id, bool visible) {
-        objects_.at(object_id).value().visible = visible;
+        getObject(object_id).visible = visible;
     }
 
     void forEachVisibleObject(std::function<void(T &object)> func) {
@@ -38,6 +40,10 @@ protected:
         Object(Args&&... __args) : instance(std::forward<Args>(__args)...) { }
     };
 
+    T &getObjectInstance(I object_id) {
+        return getObject(object_id).instance;
+    }
+
     std::vector<std::optional<Object>> objects_;
 private:
     I findEmptyOrCreate() {
@@ -49,5 +55,11 @@ private:
         
         objects_.emplace_back();
         return objects_.size() - 1; // Return the last, newly added element
+    }
+
+    Object &getObject(I object_id) {
+        if (object_id < 0 || static_cast<size_t>(object_id) >= objects_.size() || !objects_[object_id].has_value())
+            throw ObjectNotFoundException{};
+        return *objects_[object_id];
     }
 };

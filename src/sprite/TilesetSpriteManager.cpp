@@ -17,30 +17,30 @@ void TilesetSpriteManager::forEachVisibleSpriteDepthSorted(std::function<void(Ti
     }
 
     std::sort(temp_sort_.begin(), temp_sort_.end(), [this] (size_t a_index, size_t b_index) {
-        return objects_.at(a_index).value().instance.getDepth()
-                > objects_.at(b_index).value().instance.getDepth();
+        return getObjectInstance(a_index).getDepth()
+                > getObjectInstance(b_index).getDepth();
     });
 
     for (size_t index : temp_sort_)
-        func(objects_.at(index).value().instance);
+        func(getObjectInstance(index));
 
     temp_sort_.clear();
 }
 
 void TilesetSpriteManager::setPos(TilesetSpriteId sprite_id, Vector2d pos) {
-    objects_.at(sprite_id)->instance.setPos(pos);
+    getObjectInstance(sprite_id).setPos(pos);
 }
 
 void TilesetSpriteManager::setDepth(TilesetSpriteId sprite_id, double depth) {
-    objects_.at(sprite_id)->instance.setDepth(depth);
+    getObjectInstance(sprite_id).setDepth(depth);
 }
 
 Vector2d TilesetSpriteManager::getPos(TilesetSpriteId sprite_id) {
-    return objects_.at(sprite_id)->instance.getPos();
+    return getObjectInstance(sprite_id).getPos();
 }
 
 void TilesetSpriteManager::move(TilesetSpriteId sprite_id, Vector2d move) {
-    auto &sprite = objects_.at(sprite_id).value().instance;
+    auto &sprite = getObjectInstance(sprite_id);
     auto res = sprite.getPos() + move;
     sprite.setPos(res);
 }

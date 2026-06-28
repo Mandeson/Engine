@@ -24,5 +24,5 @@ Color TextObject::getColor() {
 }
 
 TextObject &TextManager::getObject(TextId text_id) {
-    return objects_.at(text_id).value().instance;
+    return getObjectInstance(text_id);
 }

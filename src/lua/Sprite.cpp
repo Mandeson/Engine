@@ -1,14 +1,19 @@
 #include "Sprite.hpp"
+#include <cstdint>
 #include "../util/Logger.hpp"
 #include "../EngineContext.hpp"
+#include "Common.hpp"
 #include "Texture.hpp"
-#include <cstdint>
-#include <lauxlib.h>
 
 struct SpriteLua {
     SpriteId sprite_id = -1;
     int texture_lua_ref = LUA_NOREF; // Lua reference to the associated Texture object
 };
+
+static void destroyedObjectWarn(lua_State *L, std::string_view method_name) {
+    auto str = Lua::Common::methodCallOnDestroyedObjectErrorText("Sprite", method_name);
+    luaL_error(L, str.c_str());
+}
 
 void Lua::Sprite::registerLua(lua_State *L) {
     luaL_newmetatable(L, kLuaStaticMetaTable);
@@ -71,21 +76,35 @@ int Lua::Sprite::newS(lua_State *L) noexcept {
 }
 
 int Lua::Sprite::destroy(lua_State *L) noexcept {
-    auto sprite_id_ptr = reinterpret_cast<SpriteId *>(luaL_checkudata(L, 1, kLuaMetaTable));
-    EngineContext::core()->getSpriteManager().destroyObject(*sprite_id_ptr);
-    *sprite_id_ptr = -1;
+    auto sprite_lua_ptr = reinterpret_cast<SpriteLua *>(luaL_checkudata(L, 1, kLuaMetaTable));
+    if (sprite_lua_ptr->sprite_id != -1) {
+        EngineContext::core()->getSpriteManager().destroyObject(sprite_lua_ptr->sprite_id);
+        sprite_lua_ptr->sprite_id = -1;
+        if (sprite_lua_ptr->texture_lua_ref != LUA_NOREF) {
+            luaL_unref(L, LUA_REGISTRYINDEX, sprite_lua_ptr->texture_lua_ref);
+            sprite_lua_ptr->texture_lua_ref = LUA_NOREF;
+        }
+    }
     return 0;
 }
 
 int Lua::Sprite::setVisible(lua_State *L) noexcept {
-    auto sprite_id = *reinterpret_cast<SpriteId *>(luaL_checkudata(L, 1, kLuaMetaTable));
+    auto sprite_lua_ptr = reinterpret_cast<SpriteLua *>(luaL_checkudata(L, 1, kLuaMetaTable));
+    if (sprite_lua_ptr->sprite_id == -1) {
+        destroyedObjectWarn(L, "setVisible");
+        return 0;
+    }
     bool visible = static_cast<bool>(luaL_checkinteger(L, 2));
-    EngineContext::core()->getSpriteManager().setVisible(sprite_id, visible);
+    EngineContext::core()->getSpriteManager().setVisible(sprite_lua_ptr->sprite_id, visible);
     return 0;
 }
 
 int Lua::Sprite::setPos(lua_State *L) noexcept {
     auto sprite_lua_ptr = reinterpret_cast<SpriteLua *>(luaL_checkudata(L, 1, kLuaMetaTable));
+    if (sprite_lua_ptr->sprite_id == -1) {
+        destroyedObjectWarn(L, "setPos");
+        return 0;
+    }
     Vector2d pos = Vector2{luaL_checknumber(L, 2), luaL_checknumber(L, 3)};
     EngineContext::core()->getSpriteManager().setPos(sprite_lua_ptr->sprite_id, pos);
     return 0;
@@ -93,6 +112,10 @@ int Lua::Sprite::setPos(lua_State *L) noexcept {
 
 int Lua::Sprite::setSize(lua_State *L) noexcept {
     auto sprite_lua_ptr = reinterpret_cast<SpriteLua *>(luaL_checkudata(L, 1, kLuaMetaTable));
+    if (sprite_lua_ptr->sprite_id == -1) {
+        destroyedObjectWarn(L, "setSize");
+        return 0;
+    }
     Vector2i size = Vector2{luaL_checkinteger(L, 2), luaL_checkinteger(L, 3)};
     EngineContext::core()->getSpriteManager().setSize(sprite_lua_ptr->sprite_id, size);
     return 0;
@@ -100,6 +123,10 @@ int Lua::Sprite::setSize(lua_State *L) noexcept {
 
 int Lua::Sprite::setDepth(lua_State *L) noexcept {
     auto sprite_lua_ptr = reinterpret_cast<SpriteLua *>(luaL_checkudata(L, 1, kLuaMetaTable));
+    if (sprite_lua_ptr->sprite_id == -1) {
+        destroyedObjectWarn(L, "setDepth");
+        return 0;
+    }
     double depth = luaL_checknumber(L, 2);
     EngineContext::core()->getSpriteManager().setDepth(sprite_lua_ptr->sprite_id, depth);
     return 0;
@@ -107,6 +134,10 @@ int Lua::Sprite::setDepth(lua_State *L) noexcept {
 
 int Lua::Sprite::getPos(lua_State *L) noexcept {
     auto sprite_lua_ptr = reinterpret_cast<SpriteLua *>(luaL_checkudata(L, 1, kLuaMetaTable));
+    if (sprite_lua_ptr->sprite_id == -1) {
+        destroyedObjectWarn(L, "getPos");
+        return 0;
+    }
     Vector2d pos = EngineContext::core()->getSpriteManager().getPos(sprite_lua_ptr->sprite_id);
     lua_pushnumber(L, pos.x);
     lua_pushnumber(L, pos.y);
@@ -115,6 +146,10 @@ int Lua::Sprite::getPos(lua_State *L) noexcept {
 
 int Lua::Sprite::move(lua_State *L) noexcept {
     auto sprite_lua_ptr = reinterpret_cast<SpriteLua *>(luaL_checkudata(L, 1, kLuaMetaTable));
+    if (sprite_lua_ptr->sprite_id == -1) {
+        destroyedObjectWarn(L, "move");
+        return 0;
+    }
     Vector2d move = Vector2{luaL_checknumber(L, 2), luaL_checknumber(L, 3)};
     EngineContext::core()->getSpriteManager().move(sprite_lua_ptr->sprite_id, move);
     return 0;
