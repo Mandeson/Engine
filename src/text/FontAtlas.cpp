@@ -2,6 +2,7 @@
 #include "../util/Logger.hpp"
 #include <cstdint>
 #include <freetype/fttypes.h>
+#include <memory>
 #include <mutex>
 #include <vector>
 #include "Font.hpp"
@@ -24,7 +25,7 @@ FontAtlas::FontAtlas(Font &font, float font_size) : font_(font), font_size_(font
 	if (font_size >= 200.0f)
 		texture_size_ *= 2;
     Log::dbg("Creatng new FontAtlas");
-    textures_.emplace_back(texture_size_);
+    textures_.emplace_back(std::make_unique<Texture>(texture_size_));
 }
 
 FontAtlas::Glyph &FontAtlas::getGlyph(wchar_t codepoint) {
@@ -51,12 +52,12 @@ FontAtlas::Glyph &FontAtlas::getGlyph(wchar_t codepoint) {
 			Log::dbg("Font atlas full");
             pos_ = {kMargin, kMargin};
             row_height_ = 0;
-            textures_.emplace_back(texture_size_);
+            textures_.emplace_back(std::make_unique<Texture>(texture_size_));
 		}
         auto &last_texture = textures_.back();
         for (int y = 0; y < glyph_size.y; y++) {
 			for (int x = 0; x < glyph_size.x; x++) {
-				last_texture.atlas_[(pos_.y + y) * texture_size_ + (pos_.x + x)] = g->bitmap.buffer[y * g->bitmap.width + x];
+				last_texture->atlas_[(pos_.y + y) * texture_size_ + (pos_.x + x)] = g->bitmap.buffer[y * g->bitmap.width + x];
 			}
 		}
 		row_height_ = std::max(row_height_, static_cast<int>(g->bitmap.rows));
@@ -67,7 +68,7 @@ FontAtlas::Glyph &FontAtlas::getGlyph(wchar_t codepoint) {
                 .offset = Vector2{g->bitmap_left, g->bitmap_top},
                 .advance = Vector2{g->advance.x, g->advance.y}}).first->second;
 		pos_.x += g->bitmap.width + kMargin;
-        last_texture.dirty_ = true;
+        last_texture->dirty_ = true;
         return glyph;
     } else {
         return it->second;
@@ -78,32 +79,32 @@ GLuint FontAtlas::getAtlasTextureId(int texture_index, PipelineState &pipeline_s
     std::scoped_lock lock{mutex_};
     for (int i = 0; i < static_cast<int>(textures_.size()) - 1; i++) { // Not the last, actively changed atlas
         auto &texture = textures_[i];
-        if (texture.atlas_.size() && texture.texture_generated_ && !texture.dirty_)
-            texture.atlas_ = std::vector<uint8_t>(); // Deallocate memory
+        if (texture->atlas_.size() && texture->texture_generated_ && !texture->dirty_)
+            texture->atlas_ = std::vector<uint8_t>(); // Deallocate memory
     }
 
     auto &texture = textures_[texture_index];
-    if (!texture.texture_generated_) {
-        glGenTextures(1, &texture.texture_id_);
-        pipeline_state.bindTexture(texture.texture_id_);
+    if (!texture->texture_generated_) {
+        glGenTextures(1, &texture->texture_id_);
+        pipeline_state.bindTexture(texture->texture_id_);
         glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
         glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
         glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
         glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
         glTexImage2D(GL_TEXTURE_2D, 0, OpenGL::getMonochromeTextureFormat(), texture_size_,
                 texture_size_, 0, OpenGL::getMonochromeTextureFormat(), GL_UNSIGNED_BYTE,
-                reinterpret_cast<void *>(&texture.atlas_[0]));
-        texture.texture_generated_ = true;
+                reinterpret_cast<void *>(&texture->atlas_[0]));
+        texture->texture_generated_ = true;
     } else {
-        if (texture.dirty_) {
-            pipeline_state.bindTexture(texture.texture_id_);
+        if (texture->dirty_) {
+            pipeline_state.bindTexture(texture->texture_id_);
             glTexSubImage2D(GL_TEXTURE_2D, 0, 0, 0, texture_size_,
                     texture_size_, OpenGL::getMonochromeTextureFormat(), GL_UNSIGNED_BYTE,
-                    reinterpret_cast<void *>(&texture.atlas_[0]));
+                    reinterpret_cast<void *>(&texture->atlas_[0]));
         }
     }
-    texture.dirty_ = false;
-    return texture.texture_id_;
+    texture->dirty_ = false;
+    return texture->texture_id_;
 }
 
 int FontAtlas::getTextureSize() {

@@ -1,6 +1,7 @@
 #pragma once
 
 #include <cstdint>
+#include <memory>
 #include <mutex>
 #include <unordered_map>
 #include <vector>
@@ -30,6 +31,7 @@ public:
 
     FontAtlas(Font &font, float font_size);
 
+    ~FontAtlas() = default;
     FontAtlas(const FontAtlas &) = delete;
     FontAtlas &operator=(const FontAtlas &) = delete;
 
@@ -40,6 +42,9 @@ private:
     struct Texture {
         Texture(int texture_size);
         ~Texture();
+
+        Texture(const Texture &) = delete;
+        Texture &operator=(const Texture &) = delete;
 
         GLuint texture_id_;
         bool texture_generated_ = false;
@@ -55,7 +60,7 @@ private:
     Vector2i pos_ = {kMargin, kMargin};
     int row_height_ = 0;
     std::unordered_map<wchar_t, Glyph> glyphs_;
-    std::vector<Texture> textures_;
+    std::vector<std::unique_ptr<Texture>> textures_;
     std::mutex mutex_;
     static std::mutex freetype_mutex_;
 };
