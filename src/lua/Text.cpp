@@ -86,6 +86,7 @@ int Lua::Text::newS(lua_State *L) noexcept {
     Log::dbg("text newS");
     if (luaL_newmetatable(L, kLuaMetaTable)) {
         const struct luaL_Reg methods[] = {
+            {"ready", ready},
             {"destroy", destroy},
             {"setVisible", setVisible},
             {"setString", setString},
@@ -100,6 +101,18 @@ int Lua::Text::newS(lua_State *L) noexcept {
         lua_setfield(L, -2, "__index");
     }
     lua_setmetatable(L, -2);
+    return 1;
+}
+
+int Lua::Text::ready(lua_State *L) noexcept {
+    auto text_lua_ptr = reinterpret_cast<TextLua *>(luaL_checkudata(L, 1, kLuaMetaTable));
+    if (text_lua_ptr->text_id == -1) {
+        destroyedObjectError(L, "ready");
+        lua_pushnil(L);
+        return 1;
+    }
+    bool ready = EngineContext::core()->getTextManager().get(text_lua_ptr->text_id).getText().ready();
+    lua_pushinteger(L, static_cast<int>(ready));
     return 1;
 }
 

@@ -53,6 +53,11 @@ void Text::setScale(float scale) {
     scale_ = scale;
 }
 
+bool Text::ready() {
+    std::scoped_lock lock(mutex_);
+    return !background_work_active_;
+}
+
 void Text::generateText(Text::Alignment alignment, int max_width) {
     int line_height = static_cast<int>(font_size_ * 1.15f);
     int pen_x = 0;

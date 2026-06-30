@@ -30,6 +30,7 @@ public:
 
     void setString(const std::string &str, Alignment alignment = Alignment::kLeft, int max_width = INT_MAX);
     void setScale(float scale);
+    bool ready();
 private:
     void generateText(Text::Alignment alignment, int max_width);
     void increaseRenderCount();
