@@ -11,6 +11,7 @@ using TextId = int;
 class TextObject {
 public:
     TextObject(ThreadPool &thread_pool, Font &font, float font_size);
+    TextObject(ThreadPool &thread_pool, Font &font, float font_size, const std::string &str, Text::Alignment alignment, int max_width);
 
     ~TextObject() = default;
     TextObject(const TextObject &) = delete;

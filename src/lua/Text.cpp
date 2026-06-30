@@ -21,6 +21,12 @@ void Lua::Text::registerLua(lua_State *L) {
         {nullptr, nullptr}
     };
     luaL_setfuncs(L, funcs, 0);
+    lua_newtable(L);
+    lua_pushinteger(L, static_cast<lua_Integer>(::Text::Alignment::kLeft));
+    lua_setfield(L, -2, "Left");
+    lua_pushinteger(L, static_cast<lua_Integer>(::Text::Alignment::kCenter));
+    lua_setfield(L, -2, "Center");
+    lua_setfield(L, -2, "Alignment");
     lua_pushvalue(L, -1);
     lua_setfield(L, -2, "__index");
     lua_setfield(L, -2, "Text");
@@ -39,14 +45,39 @@ int Lua::Text::newS(lua_State *L) noexcept {
 
     auto text_lua_ptr = reinterpret_cast<TextLua *>(lua_newuserdata(L, sizeof(TextLua)));
     *text_lua_ptr = TextLua{}; // Initialize fields
-    try {
-        auto core = EngineContext::core();
-        text_lua_ptr->text_id = core->getTextManager().newObject(core->getThreadPool(), *font,static_cast<float>(font_size));
-    } catch (std::exception &e) {
-        lua_pop(L, 1);
-        lua_pushnil(L);
-        luaL_error(L, e.what());
-        return 1;
+
+    if (lua_gettop(L) >= 1 + 3) { // third argument: str
+        std::string str{luaL_checkstring(L, 3)};
+
+        auto alignment = ::Text::Alignment::kLeft;
+        if (lua_gettop(L) >= 1 + 4) { // fourth argument: text alignment
+            alignment = static_cast<::Text::Alignment>(luaL_checknumber(L, 4));
+        }
+        auto max_width = INT_MAX;
+        if (lua_gettop(L) >= 1 + 5) { // fifth argument: max width
+            max_width = static_cast<int>(luaL_checknumber(L, 5));
+        }
+
+        try {
+            auto core = EngineContext::core();
+            text_lua_ptr->text_id = core->getTextManager().newObject(core->getThreadPool(),
+                    *font,static_cast<float>(font_size), str, alignment, max_width);
+        } catch (std::exception &e) {
+            lua_pop(L, 1);
+            lua_pushnil(L);
+            luaL_error(L, e.what());
+            return 1;
+        }
+    } else {
+        try {
+            auto core = EngineContext::core();
+            text_lua_ptr->text_id = core->getTextManager().newObject(core->getThreadPool(), *font,static_cast<float>(font_size));
+        } catch (std::exception &e) {
+            lua_pop(L, 1);
+            lua_pushnil(L);
+            luaL_error(L, e.what());
+            return 1;
+        }
     }
 
     lua_pushvalue(L, 1);

@@ -1,7 +1,11 @@
 #include "TextManager.hpp"
 
+TextObject::TextObject(ThreadPool &thread_pool, Font &font, float font_size, const std::string &str,
+        Text::Alignment alignment, int max_width)
+    : text_(std::make_unique<Text>(thread_pool, font, font_size, str, alignment, max_width)) { }
+
 TextObject::TextObject(ThreadPool &thread_pool, Font &font, float font_size)
-        : text_(std::make_unique<Text>( thread_pool, font, font_size)) { }
+    : text_(std::make_unique<Text>(thread_pool, font, font_size)) { }
 
 Text &TextObject::getText() {
     return *text_; // It's safe, because the pointer is initialized in the constroctor
