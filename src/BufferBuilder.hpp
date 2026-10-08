@@ -51,7 +51,12 @@ public:
         return vertices_.size() / 4;
     }
     static void unbind() {
-        glBindVertexArray(0);
+        if (OpenGL::vertexArraysSupported()) {
+            glBindVertexArray(0);
+        } else {
+            glBindBuffer(GL_ARRAY_BUFFER, 0);
+            glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, 0);
+        }
     }
 protected:
     void addQuad(const std::array<V, 4> &vertices) {
