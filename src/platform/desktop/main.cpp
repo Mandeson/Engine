@@ -57,13 +57,11 @@ int main() {
 		monitor_size.x = mode->width;
 		monitor_size.y = mode->height;
 	}
-	float ui_scale = 1.0f;
-	if (monitor_size.y >= 1440 && monitor_size.y < 2000)
-		ui_scale = 1.5f;
-	else if (monitor_size.y >= 2000)
-		ui_scale = 2.0f;
-	Vector2i window_size = kWindowDefaultSize * ui_scale;
-	GLFWwindow *window = createWindow(window_size, monitor_size);
+	GLFWwindow *window = createWindow(kWindowDefaultSize, monitor_size);
+	Vector2f ui_scale{};
+	glfwGetWindowContentScale(window, &ui_scale.x, &ui_scale.y);
+	Vector2i framebuffer_size{};
+	glfwGetFramebufferSize(window, &framebuffer_size.x, &framebuffer_size.y);
 	if (window != NULL) {
 		Log::info("<Desktop> Created window");
 		if (gladLoadGL((GLADloadfunc)glfwGetProcAddress)) {
@@ -100,7 +98,8 @@ int main() {
 	#endif
 				std::shared_ptr<Game> game;
 				try {
-					game = std::make_shared<Game>(window_size, monitor_size.y, ui_scale, random_seed);
+					game = std::make_shared<Game>(framebuffer_size, monitor_size.y, std::max(ui_scale.x, ui_scale.y),
+							random_seed);
 					g_game = game;
 
 					glfwSetFramebufferSizeCallback(window, framebuffer_size_callback);
