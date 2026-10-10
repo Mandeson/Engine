@@ -28,7 +28,7 @@ else()
     FetchContent_Declare(
         Lua
         GIT_REPOSITORY	https://github.com/walterschell/Lua.git
-        GIT_TAG 	3ed55a56eaa05c9221f40b3c07d0e908eb1067b0
+        GIT_TAG 	b153bcc9c934dc710fce067ef74c747ca06d260d
     )
     FetchContent_MakeAvailable(Lua)
 endif()
@@ -39,7 +39,7 @@ else()
     FetchContent_Declare(
         glm
         GIT_REPOSITORY	https://github.com/g-truc/glm.git
-        GIT_TAG 	bf71a834948186f4097caa076cd2663c69a10e1e #refs/tags/1.0.1
+        GIT_TAG 	6f14f4792a0cde5d0cf2c910506724d61cb95834
     )
     FetchContent_MakeAvailable(glm)
 endif()
@@ -50,7 +50,7 @@ else()
     FetchContent_Declare(
         freetype
         GIT_REPOSITORY	https://github.com/freetype/freetype.git
-        GIT_TAG 	b04db3872cfac5ee4fd4f895933cebce3576fbf0
+        GIT_TAG 	e2526d30e673c3063209bcbad8bdfc7fe1745fc3
     )
     FetchContent_MakeAvailable(freetype)
 endif()
@@ -85,7 +85,7 @@ if (ENGINE_DESKTOP)
         FetchContent_Declare(
             glfw
             GIT_REPOSITORY	https://github.com/glfw/glfw.git
-            GIT_TAG 	ac10768495837eb98da27d01fe706073d6d251c2
+            GIT_TAG 	92dcf4ce74f2e2554a98fea09be7c705c17daa5a
         )
         FetchContent_MakeAvailable(glfw)
     endif()
