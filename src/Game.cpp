@@ -25,6 +25,7 @@ Game::Game(Vector2i window_size, [[maybe_unused]] int monitor_height, float ui_s
         buildErrorMessage(e.what());
     }
 
+    glViewport(0, 0, window_size.x, window_size.y);
     glClearColor(0.0f, 0.0f, 0.0f, 1.0f);
 }
 
