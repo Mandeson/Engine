@@ -84,13 +84,13 @@ bool TextureBufferBuilderFloat::bind(GLuint a_pos_location, GLuint a_tex_coord_l
     bool bound = BufferBuilder::update(usage);
     if(!BufferBuilder::empty()) {
         if (!bound) {
-            if (OpenGL::vertexArraysSupported()) {
+            if (OpenGL::vertexArraysSupported())
                 glBindVertexArray(VAO_);
-            } else {
+            else
                 BufferBuilder::rawBind();
-                setupAttribPointers(a_pos_location, a_tex_coord_location);
-            }
         }
+        if (!OpenGL::vertexArraysSupported())
+            setupAttribPointers(a_pos_location, a_tex_coord_location);
         
         return true;
     } else {
