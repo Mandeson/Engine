@@ -22,7 +22,8 @@ constexpr int kDeltaFilterMaxAnomally = 20;
 constexpr double kMaxDeltaTime = 0.1;
 
 std::weak_ptr<Game> g_game;
-Vector2f cursor_pos;
+Vector2f g_cursor_pos;
+Vector2f g_framebuffer_coord_scale;
 
 void framebuffer_size_callback(GLFWwindow *window, int width, int height);
 void key_callback(GLFWwindow* window, int key, int scancode, int action, int mods);
@@ -38,6 +39,12 @@ static GLFWwindow *createWindow(Vector2i window_size, Vector2i monitor_size) {
 		glfwSwapInterval(1);
 	}
 	return window;
+}
+
+static void updateCoordinateScale(GLFWwindow *window, Vector2i framebuffer_size) {
+	Vector2i window_size{};
+	glfwGetWindowSize(window, &window_size.x, &window_size.y);
+	g_framebuffer_coord_scale = static_cast<Vector2f>(framebuffer_size) / static_cast<Vector2f>(window_size);
 }
 
 int main() {
@@ -62,6 +69,7 @@ int main() {
 	glfwGetWindowContentScale(window, &ui_scale.x, &ui_scale.y);
 	Vector2i framebuffer_size{};
 	glfwGetFramebufferSize(window, &framebuffer_size.x, &framebuffer_size.y);
+	updateCoordinateScale(window, framebuffer_size);
 	if (window != NULL) {
 		Log::info("<Desktop> Created window");
 		if (gladLoadGL((GLADloadfunc)glfwGetProcAddress)) {
@@ -196,14 +204,16 @@ GLint OpenGL::getMonochromeTextureFormat() {
 }
 
 void framebuffer_size_callback(GLFWwindow *window, int width, int height) {
-	(void)window;
 	auto game = EngineContext::game();
-	game->windowSize({width, height});
+	Vector2i framebuffer_size = {width, height};
+	game->windowSize(framebuffer_size);
 #ifdef WIN32
 	game->render();
 	glfwSwapBuffers(window);
 #endif
-	Log::dbg("<Desktop> Resized: {} x {}", width, height);
+	updateCoordinateScale(window, framebuffer_size);
+	Log::dbg("<Desktop> Resized: {} x {} - Coordinate scale: {} x {}", width, height, g_framebuffer_coord_scale.x,
+			g_framebuffer_coord_scale.y);
 }
 
 void key_callback(GLFWwindow* window, int key, [[maybe_unused]] int scancode, int action, [[maybe_unused]] int mods) {
@@ -255,7 +265,7 @@ void key_callback(GLFWwindow* window, int key, [[maybe_unused]] int scancode, in
 }
 
 void cursor_position_callback(GLFWwindow*, double xpos, double ypos) {
-	cursor_pos = Vector2{xpos, ypos};
+	g_cursor_pos = Vector2{xpos, ypos};
 }
 
 void mouse_button_callback(GLFWwindow*, int button, int action, int) {
@@ -267,10 +277,12 @@ void mouse_button_callback(GLFWwindow*, int button, int action, int) {
 
 	auto game = EngineContext::game();
 
+	Vector2f curosor_framebuffer_pos = g_cursor_pos * g_framebuffer_coord_scale;
+
 	if (button == GLFW_MOUSE_BUTTON_LEFT)
-		game->mouseButtonEvent(Input::Mouse::Button::kLeft, button_state, cursor_pos);
+		game->mouseButtonEvent(Input::Mouse::Button::kLeft, button_state, curosor_framebuffer_pos);
 	else if (button == GLFW_MOUSE_BUTTON_RIGHT)
-		game->mouseButtonEvent(Input::Mouse::Button::kRight, button_state, cursor_pos);
+		game->mouseButtonEvent(Input::Mouse::Button::kRight, button_state, curosor_framebuffer_pos);
 	else if (button == GLFW_MOUSE_BUTTON_MIDDLE)
-	 	game->mouseButtonEvent(Input::Mouse::Button::kMiddle, button_state, cursor_pos);
+	 	game->mouseButtonEvent(Input::Mouse::Button::kMiddle, button_state, curosor_framebuffer_pos);
 }
